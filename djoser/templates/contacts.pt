@@ -1,0 +1,13 @@
+<html metal:use-macro="load: main.pt">
+      <div metal:fill-slot="content" id="content">
+        <div class="contacts">
+          <a href="/contacts/@@add-contact" class="imglink">
+            <button type="button">
+              <img src="/static/add_contact_icon.png" alt="+" 
+                   title="Add a new contact" />
+              Add Contact
+            </button>
+          </a>
+        </div>
+      </div>
+</html>

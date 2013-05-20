@@ -1,0 +1,30 @@
+<html metal:use-macro="load: main.pt">
+      <div metal:fill-slot="content" id="content">
+        <div class="tablets">
+          <div class="tablet-outer">
+            <a href="/contacts">
+              <div class="tablet" id="contacts-tablet">
+                <div class="tablet-image">
+                  <img src="/static/contacts.png" alt="" />
+                </div>
+                <div class="tablet-text inset-text">
+                  Contacts
+                </div>
+              </div> <!-- tablet -->
+            </a>
+          </div> <!-- tablet-outer -->
+          <div class="tablet-outer">
+            <a href="/projects">
+              <div class="tablet" id="projects-tablet">
+                <div class="tablet-image">
+                  <img src="/static/projects.png" alt="" />
+                </div>
+                <div class="tablet-text inset-text">
+                  Projects
+                </div>
+              </div> <!-- tablet -->
+            </a>
+          </div> <!-- tablet-outer -->
+        </div> <!-- tablets -->
+      </div>
+</html>

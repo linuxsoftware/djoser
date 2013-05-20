@@ -1,0 +1,63 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+  <head>
+    <title>Djoser</title>
+    <link rel="shortcut icon" href="/favicon.ico"/>
+    <link rel="stylesheet" href="/static/djoser.css" type="text/css" media="screen" charset="utf-8" />
+  </head>
+
+  <body>
+    <div id="wrapper">
+      <div id="top-bar">
+        <img src="/static/djoser_small.png" alt="[Dj3]" title="[Dj3]" />
+        <div class="icon">
+        </div>
+        <div class="title-text inset-text">
+           Djoser
+        </div>
+        <div class="hieroglyphics">
+          <img src="/static/cartouche.png" alt="" title="" />
+          <img src="/static/hieroglyphics1.png" alt="" title="" />
+          <img src="/static/hieroglyphics2.png" alt="" title="" />
+        </div>
+      </div>
+      <div id="content">
+        <div class="tablets">
+          <div class="tablet-outer">
+            <div class="tablet" id="contacts-tablet">
+              <div class="tablet-image">
+                <img src="/static/contacts.png" alt="" />
+              </div>
+              <div class="tablet-text inset-text">
+                Contacts
+              </div>
+            </div> <!-- tablet -->
+          </div> <!-- tablet-outer -->
+          <div class="tablet-outer">
+            <div class="tablet" id="projects-tablet">
+              <div class="tablet-image">
+                <img src="/static/projects.png" alt="" />
+              </div>
+              <div class="tablet-text inset-text">
+                Projects
+              </div>
+            </div> <!-- tablet -->
+          </div> <!-- tablet-outer -->
+        </div> <!-- tablets -->
+        <!--       <p> -->
+        <!--       Procedure -->
+        <!--  -->
+        <!-- According to the Italian Constitution, the election must be held in the form of secret ballot, with the Senators, the Deputies and 58 regional representatives. The election is held in the Palazzo Montecitorio, home of the Chamber of Deputies, with the capacity of the building being expanded for the purpose. The first three ballots require a two-thirds majority of the 1,007 voters in order to elect a President, in this case 672 votes. Starting from the fourth ballot, an absolute majority is required for candidates to be elected, in this case 504 votes. The election is conducted by the Speaker of the Chamber of Deputies, who has the authority to proceed to the public counting of the votes. The presidential mandate lasts seven years. The term of the current President, Giorgio Napolitano, was due to end on 15 May 2013.[citation needed] -->
+        <!-- On 16 April 2013 the Five Star Movement (M5S) announced its support for investigative journalist Milena Gabanelli, and the party's leader Beppe Grillo indicated that the party may be willing to form a coalition government with the centre-left coalition if she were elected president with the coalition's support.[2] On 17 April, after Gabanelli and Gino Strada withdrew from consideration, the M5S announced its support for Stefano Rodotà, a former President of the Data Protection Authority,[3] member of the Chamber of Deputies, Member of the European Parliament, and president of the Democratic Party of the Left (PDS).[4] -->
+        <!-- On 17 April Pier Luigi Bersani, leader of the Democratic Party (PD), put forward Franco Marini, a former leader of the Italian Confederation of Workers' Trade Unions (CISL), leader of the Italian People's Party (PPI) and President of the Italian Senate, as his party's candidate for President. Marini was selected having received the support of centre-right parties, notably The People of Freedom (PdL), Civic Choice (SC), Lega Nord (LN) and the Union of the Centre (UdC). However, Matteo Renzi, mayor of Florence and leader of a party minority, several Democratic Party lawmakers and Left Ecology Freedom (SEL) stated that they would not support Marini.[5] -->
+        <!-- On 18 April Marini received just 521 votes in the first ballot, short of the 672 needed, as more than 200 centre-left delegates rebelled. In the run-up of the second ballot Marini's candidacy was retired. The first two rounds' inconclusive results were interpreted as showing turmoil within the centre-left.[6] As results of apparent jokes by electors, a number of implausible candidates, such as soccer manager Roberto Mancini and porn star Rocco Siffredi, received individual votes.[6] -->
+        <!-- On 19 April the PD and SEL selected Romano Prodi, a former Prime Minister and President of the European Commission, to be their candidate in the fourth ballot.[7] Despite the fact that his candidacy had received unanimous support among the two parties' delegates, Prodi obtained only 395 votes in the fourth ballot as more than 100 centre-left electors did not vote for him. After the vote, Bersani announced his resignation from party secretary and Prodi pulled out of the race.[8] -->
+        <!-- On 20 April incumbent President Giorgio Napolitano, holder of the post since 2006, agreed to run for another term in an attempt to break the parliamentary deadlock.[citation needed] Mr Napolitano is the first President of the Republic to take such action. -->
+        <!--       </p> -->
+      </div> <!-- content -->
+      <div id="bottom-bar">
+        <img src="/static/pyramid_powered.png" alt="" />
+      </div>
+    </div> <!-- wrapper -->
+  </body>
+</html>
