@@ -1,7 +1,5 @@
 <html metal:use-macro="load: main.pt">
-      <title metal:fill-slot="title">
-        Djoser Edit Contact
-      </title>
+      <title metal:fill-slot="title">Djoser Edit Contact</title>
       <div metal:fill-slot="content" id="content">
         <div id="contacts">
           <div class="contact">

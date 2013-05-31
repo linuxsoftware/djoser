@@ -35,6 +35,11 @@ class AppModule(PersistentMapping):
         self.__parent__  = parent
         parent[self.__name__] = self
 
+    def delete(self, names):
+        for name in names:
+            if name in self:
+                del self[name]
+
 class Contacts(AppModule):
     __acl__    = [(Allow, Authenticated, 'view'),
                   (Allow, 'group:editors', 'edit')]

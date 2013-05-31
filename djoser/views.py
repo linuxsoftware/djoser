@@ -13,7 +13,7 @@ from wtforms.fields import TextField
 from .models import AppRoot
 from .models import Contacts
 from .models import Contact
-from .name   import chooseName
+from .name   import chooseName, chooseAddress
 
 from .security import checkAuthentication
 
@@ -34,6 +34,21 @@ def viewRoot(request):
              renderer='templates/contacts.pt',
              permission='view')
 def viewContacts(context, request):
+    if request.method == 'POST': 
+        contacts = [ contact[7:] for contact in request.POST
+                                 if contact.startswith("select-") ]
+        if 'add-contact' in request.POST:
+            url = request.resource_url(context, "@@add-contact")
+            return HTTPFound(location = url)
+        elif contacts and 'delete-contact' in request.POST:
+            context.delete(contacts)
+        elif contacts and 'edit-contact' in request.POST:
+            contact = context.get(contacts[0])
+            if contact:
+                url = request.resource_url(contact, "@@edit")
+                return HTTPFound(location = url,
+                                 headers = [('hithere', contacts[1])])
+
     form = ContactForm()
     headings = [field.label.text for field in form]
     rows = []
@@ -86,12 +101,35 @@ def viewContact(request):
     return {'project': 'd3',
             'currentUser': authenticated_userid(request)}
 
+@view_config(name='edit',
+             context=Contact,
+             renderer='templates/edit_contact.pt',
+             permission='edit')
+def editContact(context, request):
+    form = ContactForm(obj=context)
+    if request.method == 'POST' and 'OK' in request.POST:
+        if not form.validate():
+            return {'form': form,
+                    'currentUser': authenticated_userid(request)}
+
+        # Make a new Contact
+        form.populate_obj(context)
+        url = request.resource_url(context).rstrip('/')
+        return HTTPFound(location = url)
+    else:
+        return {'form':  form,
+                'currentUser': authenticated_userid(request)}
+
 @view_config(name='add-test-data',
              context=Contacts,
              permission='edit')
 def addTestData(context, request):
     for i in range(100):
         contact = Contact(chooseName(), context)
+        street, district, city = chooseAddress()
+        contact.address1 = street
+        contact.address2 = district
+        contact.city     = city
     return Response('Done!')
 
 #---------------------------------------------------------------------------

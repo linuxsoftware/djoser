@@ -1,4 +1,5 @@
 <html metal:use-macro="load: main.pt">
+    <title metal:fill-slot="title">Projects</title>
       <div metal:fill-slot="content" id="content">
       </div>
 </html>

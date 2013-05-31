@@ -102,14 +102,31 @@ body {
     padding:       5px;
     margin:        0;
 }
-.tool-bar button {
-    height:      38px;
-}
-.tool-bar button img {
-    vertical-align: middle;
-}
-.tool-bar a button {
+.tool-bar input[type="submit"] {
+    height:       38px;
+    padding-left: 32px;
+
+    border:                solid 1px #888;
+    -moz-border-radius:    5px;
+    -webkit-border-radius: 5px;
+    border-radius:         5px;
+
     cursor: pointer;
+}
+.tool-bar input[type="submit"][name="add-contact"] {
+    background-image:      url(/static/add_contact_icon.png);
+    background-repeat:     no-repeat;
+    background-position:   1px 2px;
+}
+.tool-bar input[type="submit"][name="delete-contact"] {
+    background-image:      url(/static/delete_contact_icon.png);
+    background-repeat:     no-repeat;
+    background-position:   1px 2px;
+}
+.tool-bar input[type="submit"][name="edit-contact"] {
+    background-image:      url(/static/edit_contact_icon.png);
+    background-repeat:     no-repeat;
+    background-position:   1px 2px;
 }
 .grid {
 }
@@ -146,6 +163,7 @@ body {
 .grid tbody tr.even {
     background: #eeffee;
 }
+
 .contact .field label  {
     display:       inline-block;
     font-weight:   bold;
