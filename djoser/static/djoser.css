@@ -16,14 +16,20 @@ body {
     font-size:     1em;
     font-family:   "Liberation Sans",Verdana,Geneva,Arial,sans-serif;
 }
-#wrapper {
+#background {
+    position:      absolute;
     width:         100%;
-    min-height:    100%;
-    position:      relative;
-
+    height:        100%;
+}
+#background.pyramid {
     background-image:      url(step_pyramid.jpg);
     background-repeat:     no-repeat;
     background-size:       cover;
+}
+#wrapper {
+    position:      relative;
+    width:         100%;
+    min-height:    100%;
 }
 #top-bar {
     position: relative;
@@ -38,18 +44,6 @@ body {
 }
 #top-bar img {
     /* float:         left; */
-}
-
-.inset-text {
-    color:         rgba(255, 255, 111, 0.5);
-    text-shadow:   #d2c957  -0px -0px 0,
-                   #d2c957  -2px -2px 0,
-                   #d2c957  -1px -1px 0,
-                   #ffff8e   1px  0px 1px,
-                   #ffff8e   0px  2px 1px,
-                   #d2c957   0px -2px 0,
-                   #d2c957  -0px  0px 3px,
-                   #ffff20  -0px  0px 5px;
 }
 #top-bar .icon {
     float:         left;
@@ -87,7 +81,7 @@ body {
     bottom:        0;
     left:          0;
     width:         100%;
-    height:        24px;
+    height:        25px;
     margin:        0;
     overflow:      hidden;
     border-top:    solid 1px #ffff6f;
@@ -97,10 +91,79 @@ body {
     float:         right;
 }
 #content {
-    padding:       10px;
+    padding:       0 0 75px 0;
+}
+#contacts {
+    background:    #f6f9ff;
+    padding:       0px;
+}
+.tool-bar {
+    overflow:      hidden;
+    padding:       5px;
+    margin:        0;
+}
+.tool-bar button {
+    height:      38px;
+}
+.tool-bar button img {
+    vertical-align: middle;
+}
+.tool-bar a button {
+    cursor: pointer;
+}
+.grid {
+}
+.grid table {
+    border-collapse: collapse;
+    border: solid 1px #444;
+    width: 100%
+}
+.grid table thead {
+    border: solid 1px #444;
+}
+.grid table th,
+.grid table td {
+    border-left:  solid 1px #bbb;
+    border-right: solid 1px #bbb;
+}
+.grid table th:first-child,
+.grid table td:first-child {
+    border-left:  solid 1px #444;
+}
+.grid table th:last-child,
+.grid table td:last-child {
+    border-right: solid 1px #444;
+}
+.grid tbody tr {
+    border-bottom: solid 1px white;
+}
+.grid tbody tr:last-child {
+    border: none;
+}
+.grid tbody tr.odd {
+    background: #ddffdd;
+}
+.grid tbody tr.even {
+    background: #eeffee;
+}
+.contact .field label  {
+    display:       inline-block;
+    font-weight:   bold;
+    width:         80px;
+}
+.inset-text {
+    color:         rgba(255, 255, 111, 0.5);
+    text-shadow:   #d2c957  -0px -0px 0,
+                   #d2c957  -2px -2px 0,
+                   #d2c957  -1px -1px 0,
+                   #ffff8e   1px  0px 1px,
+                   #ffff8e   0px  2px 1px,
+                   #d2c957   0px -2px 0,
+                   #d2c957  -0px  0px 3px,
+                   #ffff20  -0px  0px 5px;
 }
 .tablets {
-    padding:       10px 0px 10px 20px;
+    padding:       20px 0px 10px 30px;
 }
 .tablet-outer {
     margin:         0;
@@ -149,55 +212,9 @@ body {
     font-weight:    bold;
     letter-spacing: 1px;
     font-size:      280%;
-    /* text-shadow:    */
-    /*                 #ddd  -1px -1px 1px, */
-    /*                 #bbb  -2px -2px 1px, */
-    /*                 #888  -3px -3px 1px, */
-    /*                 #444  -4px -4px 1px, */
-    /*                 #222  -5px -5px 1px; */
-    /* text-shadow: rgba(0,0,0,0.5) -1px 0, rgba(0,0,0,0.3) 0 -1px, rgba(255,255,255,0.5) 0 1px, rgba(0,0,0,0.3) -1px -2px; */
 
-    width:         100%;
-    text-align:    center;
-}
-.contacts {
-    background:    #f6f9ff;
-    padding:       10px;
-    margin:        20px;
-
-    width:         auto;
-    height:        260px;
-}
-.contact {
-    background:    #f6f9ff;
-    padding:       10px;
-    margin:        20px;
-}
-/* .buttonold { */
-/*     padding:     0px 1px; */
-/*     margin:      0px; */
-/*     width:       140px; */
-/*     height:      31px; */
-/*     display:     inline-block; */
-/*     border:      2px outset; */
-/*     text-align:  center; */
-/*     background:  #ccc; */
-/*     color:       #333; */
-/*     -moz-border-radius:    18px; */
-/*     -webkit-border-radius: 18px; */
-/*     border-radius:         18px; */
-/*     /* border-radius:        30px 30px 30px 80px; */ */
-/*     /* border-radius:        10px 10px 30px 30px; */ */
-/*     border-radius:         0px; */
-/* } */
-button {
-    height:      38px;
-}
-button img {
-    vertical-align: middle;
-}
-a button {
-    cursor: pointer;
+    width:          100%;
+    text-align:     center;
 }
 
 /* Links */

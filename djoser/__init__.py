@@ -15,10 +15,6 @@ def main(global_config, **settings):
     config.add_static_view('static', 'static',
                            cache_max_age=3600)
 
-    #TODO consider using pyramid_deform.includeme(config)
-    config.add_static_view('deform_static', 'deform:static',
-                           cache_max_age=3600)
-
 #    authnPolicy = BasicAuthAuthenticationPolicy(check=checkAuthentication,
 #                                                realm='Djosr Login') #, debug=True)
     authnPolicy = AuthTktAuthenticationPolicy(secret='sososecret',

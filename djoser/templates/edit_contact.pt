@@ -3,8 +3,22 @@
         Djoser Edit Contact
       </title>
       <div metal:fill-slot="content" id="content">
-        <div class="contact">
-          <span tal:replace="structure form"/>
+        <div id="contacts">
+          <div class="contact">
+            <ul tal:condition="form.errors" ul class="errors">
+              <tal:field tal:repeat="(field,errors) form.errors.items()">
+              <li tal:repeat="error errors">
+                ${form[field].label}: ${error}
+              </li>
+              </tal:field>
+            </ul>
+            <form method="POST" action="${request.path_url}" enctype="multipart/form-data">
+              <div class="field" tal:repeat="field form">
+                ${field.label} ${field}
+              </div>
+              <input type="submit" name="OK" value="OK"/>
+            </form>
+          </div>
         </div>
       </div>
 </html>

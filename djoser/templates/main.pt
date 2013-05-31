@@ -1,16 +1,13 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
 <html>
   <head>
-    <div metal:define-slot="title"></div>
+    <title metal:define-slot="title"></title>
     <link rel="shortcut icon" href="/favicon.ico"/>
     <link rel="stylesheet" href="/static/djoser.css" type="text/css" media="screen" charset="utf-8" />
-    <!-- DJM TODO this should be a metal macro -->
-    <link rel="stylesheet" type="text/css"
-          href="${request.static_url('deform:static/css/form.css')}" />
-     <script src="${request.static_url('deform:static/scripts/jquery-1.7.2.min.js')}"></script>
-    <script src="${request.static_url('deform:static/scripts/deform.js')}"></script>
+    <metal:scripts metal:define-slot="scripts"></metal:scripts>
   </head>
   <body>
+    <div metal:define-slot="background"></div>
     <div id="wrapper">
       <div id="top-bar">
         <a href="/">

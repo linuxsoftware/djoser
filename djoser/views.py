@@ -1,30 +1,19 @@
 from pyramid.view import view_config
 from pyramid.view import forbidden_view_config
-from pyramid.httpexceptions import HTTPUnauthorized
-from pyramid.httpexceptions import HTTPForbidden
+from pyramid.response import Response
 from pyramid.httpexceptions import HTTPFound
 from pyramid.security import remember
 from pyramid.security import forget
 from pyramid.security import authenticated_userid
 
-import colander
-from colander import MappingSchema
-from colander import SequenceSchema
-from colander import SchemaNode
-from colander import Schema
-from colander import String
-from colander import Boolean
-from colander import Integer
-from colander import Length
-from colander import OneOf
-
-from deform import ValidationFailure
-from deform import Form
-from deform import widget
+from wtforms import Form
+from wtforms.validators import required
+from wtforms.fields import TextField
 
 from .models import AppRoot
 from .models import Contacts
 from .models import Contact
+from .name   import chooseName
 
 from .security import checkAuthentication
 
@@ -44,59 +33,51 @@ def viewRoot(request):
 @view_config(context=Contacts,
              renderer='templates/contacts.pt',
              permission='view')
-def viewContacts(request):
+def viewContacts(context, request):
+    form = ContactForm()
+    headings = [field.label.text for field in form]
+    rows = []
+    for name, contact in context.items():
+        form.process(obj=contact)
+        rows.append([name, ]+[field.data for field in form])
+    
     return {'project': 'd3',
+            'headings':    headings,
+            'rows':        rows,
             'currentUser': authenticated_userid(request)}
 
 #---------------------------------------------------------------------------
 # Contact
 #---------------------------------------------------------------------------
-class ContactSchema(Schema):
-    name     = SchemaNode(String())
-    address1 = SchemaNode(String(), missing=u'')
-    address2 = SchemaNode(String(), missing=u'')
-    city     = SchemaNode(String(), missing=u'')
-    postCode = SchemaNode(String(), missing=u'')
-    country  = SchemaNode(String(), missing=u'')
-    phone    = SchemaNode(String(), missing=u'')
-    email    = SchemaNode(String(), missing=u'')
+class ContactForm(Form):
+    name     = TextField(validators=[required()])
+    address1 = TextField(u"Street")
+    address2 = TextField(u"Suburb")
+    city     = TextField()
+    postCode = TextField()
+    country  = TextField()
+    phone    = TextField()
+    email    = TextField()
 
 @view_config(name='add-contact',
              context=Contacts,
              renderer='templates/edit_contact.pt',
              permission='edit')
 def addContact(context, request):
-    schema = ContactSchema()
-    form = Form(schema, buttons=('submit',))
-    if 'submit' in request.POST:
-        controls = request.POST.items()
-        try:
-            appstruct = form.validate(controls)
-        except ValidationFailure, e:
-            return {'form': e.render(),
+    form = ContactForm(request.POST)
+    if request.method == 'POST' and 'OK' in request.POST:
+        if not form.validate():
+            return {'form': form,
                     'currentUser': authenticated_userid(request)}
 
         # Make a new Contact
-        contact = Contact(appstruct['name'], context)
+        contact = Contact(form.name.data, context)
+        form.populate_obj(contact)
         url = request.resource_url(contact).rstrip('/')
         return HTTPFound(location = url)
-
     else:
-        return {'form':  form.render(),
+        return {'form':  form,
                 'currentUser': authenticated_userid(request)}
-
-    #    # Make a new Contact
-    #    body = request.params['body']
-    #    contact = Contact()
-    #    contact.__name__   = name
-    #    contact.__parent__ = context
-    #    context[name] = contact
-    #    return HTTPFound(location = request.resource_url(contact))
-    #save_url = request.resource_url(context, 'add-contact', name)
-    #contact = Contact('')
-    ##logged_in = authenticated_userid(request)
-    #return dict(contact      = contact,
-    #            save_url     = save_url)
 
 @view_config(context=Contact,
              renderer='templates/contact.pt',
@@ -104,6 +85,14 @@ def addContact(context, request):
 def viewContact(request):
     return {'project': 'd3',
             'currentUser': authenticated_userid(request)}
+
+@view_config(name='add-test-data',
+             context=Contacts,
+             permission='edit')
+def addTestData(context, request):
+    for i in range(100):
+        contact = Contact(chooseName(), context)
+    return Response('Done!')
 
 #---------------------------------------------------------------------------
 # Login
