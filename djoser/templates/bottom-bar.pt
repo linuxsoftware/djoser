@@ -1,0 +1,60 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+  <head>
+    <title metal:define-slot="title"></title>
+    <link rel="shortcut icon" href="/favicon.ico"/>
+    <link rel="stylesheet" href="/static/djoser.css" type="text/css" media="screen" charset="utf-8" />
+    <metal:scripts define-slot="scripts"></metal:scripts>
+  </head>
+  <body>
+    <div id="wrapper">
+      <div metal:define-macro="bottom_bar" id="bottom-bar">
+        <div class="linuxsoftware-copyleft">
+          <a href="http://linuxsoftware.co.nz" title="Copyright LinuxSoftware 2013" class="imglink">
+            <div class="linuxsoftware">
+              <img src="/static/lilblue_30x25.png" alt="" />
+              <img src="/static/ls_text.png" alt="LinuxSoftware" class="ls_text" />
+            </div>
+          </a>
+          <a href="http://www.gnu.org/licenses/agpl.html" title="GNU AFFERO GENERAL PUBLIC LICENSE" class="imglink">
+            <div class="copyleft" >
+              &copy; 2013<br/>
+              AGPLv3
+            </div>
+          </a>
+        </div>
+        <div class="fork-me">
+          <a href="https://github.com/linuxsoftware/djoser" title="Fork me on GitHub" class="imglink">
+            <img src="/static/github_graybg.png" alt="GitHub" class="octocat" />
+          </a>
+        </div>
+        <div class="bottom-right">
+          <div class="pyramid-powered">
+            <a href="http://docs.pylonsproject.org/projects/pyramid/en/latest/" 
+               title="Powered by Pyramid" class="imglink">
+              <img src="/static/pyramid_powered.png" alt="Pyramid" />
+            </a>
+          </div>
+          <div class="zodb-storage">
+            <a href="http://zodb.org" 
+               title="Persisted using ZODB" class="imglink">
+              <img src="/static/zodb.png" alt="ZODB" />
+            </a>
+          </div>
+          <div class="chameleon-templates">
+            <a href="http://pagetemplates.org" 
+               title="Using Chameleon.zpt templates" class="imglink">
+              <img src="/static/chameleon.zpt_small.png" alt="Chameleon.zpt" />
+            </a>
+          </div>
+          <div class="wtforms">
+            <a href="http://wtforms.simplecodes.com/docs"
+               title="Using WTForms" class="imglink">
+              <img src="/static/wtforms.png" alt="WTForms" />
+            </a>
+          </div>
+        </div>
+      </div >
+    </div> <!-- wrapper -->
+  </body>
+</html>
