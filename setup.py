@@ -14,6 +14,7 @@ requires = [
     'pyramid_debugtoolbar',
     'ZODB3',
     'waitress',
+    'WebTest',
     ]
 
 setup(name='djoser',
