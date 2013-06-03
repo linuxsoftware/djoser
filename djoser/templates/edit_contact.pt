@@ -1,22 +1,31 @@
 <html metal:use-macro="load: main.pt">
-      <title metal:fill-slot="title">Djoser Edit Contact</title>
+      <title metal:fill-slot="title">Edit Contact</title>
+      <a metal:fill-slot="module-title" href="/contacts" title="Contacts">
+          <div class="module-title">
+              Contacts
+          </div>
+      </a>
       <div metal:fill-slot="content" id="content">
         <div id="contacts">
-          <div class="contact">
-            <ul tal:condition="form.errors" ul class="errors">
-              <tal:field tal:repeat="(field,errors) form.errors.items()">
-              <li tal:repeat="error errors">
-                ${form[field].label}: ${error}
-              </li>
-              </tal:field>
-            </ul>
-            <form method="POST" action="${request.path_url}" enctype="multipart/form-data">
+          <form method="POST" action="${request.path_url}" enctype="multipart/form-data">
+            <div class="contact">
+              <ul tal:condition="form.errors" ul class="errors">
+                <tal:field tal:repeat="(field,errors) form.errors.items()">
+                <li tal:repeat="error errors">
+                  ${form[field].label}: ${error}
+                </li>
+                </tal:field>
+              </ul>
               <div class="field" tal:repeat="field form">
                 ${field.label} ${field}
               </div>
-              <input type="submit" name="OK" value="OK"/>
-            </form>
-          </div>
+            </div> <!-- contact -->
+            <div class="tool-bar">
+            <input type="submit" name="OK" value="OK"/>
+            <input type="submit" name="Prev" value="Previous" tal:attributes="disabled prevDisabled"/>
+            <input type="submit" name="Next" value="Next" tal:attributes="disabled nextDisabled"/>
+            </div>
+          </form>
         </div>
       </div>
 </html>

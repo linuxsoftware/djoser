@@ -1,6 +1,6 @@
 <html metal:use-macro="load: main.pt">
     <title metal:fill-slot="title">Contacts</title>
-    <metal:scripts metal:fill-slot="scripts">
+    <metal:scripts fill-slot="scripts">
         <link rel="stylesheet" href="/static/demo_table.css" type="text/css" media="screen" charset="utf-8" />
 		<script type="text/javascript" language="javascript" src="/static/jquery.js"></script>
 		<script type="text/javascript" language="javascript" src="/static/jquery.dataTables.min.js"></script>
@@ -10,6 +10,9 @@
 			} );
 		</script>
     </metal:scripts>
+        <div metal:fill-slot="module-title" class="module-title">
+          Contacts
+        </div>
       <div metal:fill-slot="content" id="content">
         <div id="contacts">
           <form method="POST" action="${request.path_url}" enctype="multipart/form-data">

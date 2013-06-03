@@ -1,5 +1,45 @@
 <html metal:use-macro="load: main.pt">
     <title metal:fill-slot="title">Projects</title>
+        <div metal:fill-slot="module-title" class="module-title">
+          Projects
+        </div>
       <div metal:fill-slot="content" id="content">
+        <div id="projects">
+          <form method="POST" action="${request.path_url}" enctype="multipart/form-data">
+            <div class="tool-bar">
+              <input type="submit"
+                     name="add-project" 
+                     value="Add Project"
+                     title="Add a new project" />
+              <input type="submit"
+                     name="delete-project" 
+                     value="Delete Project"
+                     title="Delete selected projects"
+                     onclick="return confirm('Really delete contacts?')" />
+              <input type="submit"
+                     name="edit-project" 
+                     value="Edit Project"
+                     title="Edit selected projects" />
+            </div> <!-- tool-bar -->
+            <div class="page-controls">
+            </div> <!-- page-controls -->
+            <div class="tree">
+              <ul>
+                <li>
+                  <input type="checkbox" name="select-Djoser" value="" />
+                  Djoser
+                </li>
+                <li>
+                  <input type="checkbox" name="select-Mow-lawn" value="" />
+                  Mow lawn
+                </li>
+                <li tal:repeat="row rows">
+                  <input type="checkbox" name="select-${row[0]}" value="" />
+                  ${row[1]}
+                </li>
+              </ul>
+            </div> <!-- tree -->
+          </form>
+        </div> <!-- projects -->
       </div>
 </html>

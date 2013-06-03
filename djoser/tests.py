@@ -39,7 +39,7 @@ class ViewTests(TestCase):
         from .views import viewRoot
         request = DummyRequest()
         info = viewRoot(request)
-        self.assertEqual(info['project'], 'd3')
+        self.assertEqual(info['currentUser'], None)
 
     def test_viewContacts(self):
         from .views import viewContacts
@@ -63,8 +63,9 @@ class ViewTests(TestCase):
     def test_viewContact(self):
         from .views import viewContact
         request = DummyRequest()
-        info = viewContact(request)
-        self.assertEqual(info['project'], 'd3')
+        contact = DummyResource(name = 'Spike')
+        info = viewContact(contact, request)
+        self.assertEqual(info['currentUser'], None)
 
     def test_addContact(self):
         from .views import addContact

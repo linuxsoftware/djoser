@@ -2,38 +2,21 @@
 <html>
   <head>
     <title metal:define-slot="title"></title>
-    <link rel="shortcut icon" href="/favicon.ico"/>
+    <link rel="shortcut icon" href="/static/favicon.ico"/>
     <link rel="stylesheet" href="/static/djoser.css" type="text/css" media="screen" charset="utf-8" />
-    <metal:scripts metal:define-slot="scripts"></metal:scripts>
+    <metal:scripts define-slot="scripts"></metal:scripts>
   </head>
   <body>
-    <div metal:define-slot="background"></div>
     <div id="wrapper">
-      <div id="top-bar">
-        <a href="/">
-          <div class="icon">
-            <img src="${request.static_url('d3:static/djoser_small.png')}" alt="[Dj3]" title="Dj3" />
-          </div>
-        </a>
-        <a href="/">
-          <div class="title-text inset-text">
-            Djoser
-          </div>
-        </a>
-        <div class="hieroglyphics">
-          <img src="/static/cartouche.png" alt="" title="" />
-          <img src="/static/hieroglyphics1.png" alt="" title="" />
-          <img src="/static/hieroglyphics2.png" alt="" title="" />
-        </div>
-        <div class="account-info">
-          <div class="current-user">${currentUser}</div>
-          <a href="/logout">Logout</a>
-        </div>
-      </div>
-      <div metal:define-slot="content"></div> <!-- content -->
-      <div id="bottom-bar">
-        <img src="/static/pyramid_powered.png" alt="" />
-      </div >
+      <div metal:define-slot="background"></div>
+      <div tal:define="template load: top-bar.pt"
+            metal:use-macro="template.top_bar">
+      </div> <!-- top-bar -->
+      <div metal:define-slot="content">
+      </div> <!-- content -->
+      <div tal:define="template load: bottom-bar.pt"
+            metal:use-macro="template.bottom_bar">
+      </div> <!-- bottom-bar -->
     </div> <!-- wrapper -->
   </body>
 </html>

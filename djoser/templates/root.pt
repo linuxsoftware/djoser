@@ -1,5 +1,7 @@
 <html metal:use-macro="load: main.pt">
+      <title metal:fill-slot="title">Djoser</title>
     <div metal:fill-slot="background" id="background" class="pyramid"></div>
+    <p>never seen</p>
       <div metal:fill-slot="content" id="content">
         <div class="tablets">
           <div class="tablet-outer">

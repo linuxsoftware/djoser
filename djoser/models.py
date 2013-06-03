@@ -68,6 +68,24 @@ class Contact(Persistent):
         self.name       = name
         parent[myId]    = self
 
+    def getId(self):
+        return self.__name__
+        
+class Project(Persistent):
+    __acl__    = [(Allow, Authenticated, 'view'),
+                  (Allow, 'group:editors', 'edit')]
+
+    def __init__(self, name, parent):
+        Persistent.__init__(self)
+        myId = findUniqueId(parent, name)
+        self.__parent__ = parent
+        self.__name__   = myId
+        self.name       = name
+        parent[myId]    = self
+
+    def getId(self):
+        return self.__name__
+
 def getAppRoot(request):
     dbRoot = get_connection(request).root()
     if not 'djoser' in dbRoot:
