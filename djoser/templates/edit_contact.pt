@@ -9,7 +9,7 @@
         <div id="contacts">
           <form method="POST" action="${request.path_url}" enctype="multipart/form-data">
             <div class="contact">
-              <ul tal:condition="form.errors" ul class="errors">
+              <ul tal:condition="form.errors" class="errors">
                 <tal:field tal:repeat="(field,errors) form.errors.items()">
                 <li tal:repeat="error errors">
                   ${form[field].label}: ${error}
