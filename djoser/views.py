@@ -45,66 +45,61 @@ class ContactForm(Form):
 @view_config(context=Contacts,
              renderer='templates/contacts.pt',
              permission='view')
-def viewContacts(context, request):
+def viewContacts(contacts, request):
     if request.method == 'POST': 
         selection = [ selected[7:] for selected in request.POST
                                    if selected.startswith("select-") ]
         if 'add-contact' in request.POST:
-            url = request.resource_url(context, "@@add-contact")
+            url = request.resource_url(contacts, "@@add-contact")
             return HTTPFound(location = url)
         elif selection and 'delete-contact' in request.POST:
-            context.delete(selection)
-            url = request.resource_url(context).rstrip('/')
-            return HTTPFound(location = url)
+            contacts.delete(selection)
         elif selection and 'edit-contact' in request.POST:
             request.session['selectedContacts'] = selection
-            contact = context.get(selection[0])
+            contact = contacts.get(selection[0])
             if contact:
                 url = request.resource_url(contact, "@@edit")
                 return HTTPFound(location = url)
-        url = request.resource_url(context).rstrip('/')
+        url = request.resource_url(contacts).rstrip('/')
         return HTTPFound(location = url)
-    else:
-        form = ContactForm()
-        headings = [field.label.text for field in form]
-        rows = []
-        for name, contact in context.items():
-            form.process(obj=contact)
-            rows.append([name, ]+[field.data for field in form])
-        
-        return {'headings':    headings,
-                'rows':        rows,
-                'currentUser': authenticated_userid(request)}
+
+    form = ContactForm()
+    headings = [field.label.text for field in form]
+    rows = []
+    for name, contact in contacts.items():
+        form.process(obj=contact)
+        rows.append([name, ]+[field.data for field in form])
+    
+    return {'headings':    headings,
+            'rows':        rows,
+            'currentUser': authenticated_userid(request)}
 
 @view_config(name='add-contact',
              context=Contacts,
              renderer='templates/edit_contact.pt',
              permission='edit')
-def addContact(context, request):
+def addContact(contacts, request):
     form = ContactForm(request.POST)
-    if request.method == 'POST' and 'OK' in request.POST:
-        if not form.validate():
-            return {'form': form,
-                    'prevDisabled': "disabled",
-                    'nextDisabled': "disabled",
-                    'currentUser':  authenticated_userid(request)}
-
-        # Create a new Contact
-        contact = Contact(form.name.data, context)
-        form.populate_obj(contact)
+    retval = {'form': form,
+              'prevDisabled': "disabled",
+              'nextDisabled': "disabled",
+              'currentUser':  authenticated_userid(request)}
+    if request.method == 'POST':
+        if 'OK' in request.POST:
+            if not form.validate():
+                return retval
+            # Create a new Contact
+            contact = Contact(form.name.data, contacts)
+            form.populate_obj(contact)
         url = request.resource_url(contact).rstrip('/')
         return HTTPFound(location = url)
-    else:
-        return {'form':  form,
-                'prevDisabled': "disabled",
-                'nextDisabled': "disabled",
-                'currentUser':  authenticated_userid(request)}
+    return retval
 
 @view_config(context=Contact,
              renderer='templates/contact.pt',
              permission='view')
-def viewContact(context, request):
-    form = ContactForm(obj=context)
+def viewContact(contact, request):
+    form = ContactForm(obj=contact)
     return {'form':        form,
             'currentUser': authenticated_userid(request)}
 
@@ -112,55 +107,56 @@ def viewContact(context, request):
              context=Contact,
              renderer='templates/edit_contact.pt',
              permission='edit')
-def editContact(context, request):
+def editContact(contact, request):
     contacts = getAppRoot(request).get('contacts')
-    form = ContactForm(request.POST, context)
+    form = ContactForm(request.POST, contact)
     selection = request.session.get('selectedContacts', [])
     myPos = None
     prevDisabled = "disabled"
     nextDisabled = "disabled"
     try:
-        myPos = selection.index(context.getId())
+        myPos = selection.index(contact.getId())
         if myPos > 0:
             prevDisabled = None
         if myPos < len(selection) - 1:
             nextDisabled = None
     except ValueError:
         pass
-    if request.method == 'POST' and 'Cancel' not in request.POST:
-        if not form.validate():
-            return {'form':         form,
-                    'prevDisabled': prevDisabled,
-                    'nextDisabled': nextDisabled,
-                    'currentUser':  authenticated_userid(request)}
+    retval = {'form':         form,
+              'prevDisabled': prevDisabled,
+              'nextDisabled': nextDisabled,
+              'currentUser':  authenticated_userid(request)}
 
-        # Update an existing Contact
-        form.populate_obj(context)
-
-        if 'OK' in request.POST:
-            request.session['selectedContacts'] = []
-            url = request.resource_url(context).rstrip('/')
+    if request.method == 'POST':
+        if 'Cancel' in request.POST:
+            url = request.resource_url(contact, "@@edit")
             return HTTPFound(location = url)
+        elif 'OK' in request.POST:
+            request.session['selectedContacts'] = []
+            url = request.resource_url(contact).rstrip('/')
         elif not prevDisabled and 'Prev' in request.POST:
             selected = selection[myPos - 1]
+            url = request.resource_url(contacts, selected, "@@edit")
         elif not nextDisabled and 'Next' in request.POST:
             selected = selection[myPos + 1]
+            url = request.resource_url(contacts, selected, "@@edit")
         else:
             return HTTPNotImplemented()
-        url = request.resource_url(contacts, selected, "@@edit")
+
+        if not form.validate():
+            return retval
+        # Update an existing Contact
+        form.populate_obj(contact)
         return HTTPFound(location = url)
-    else: 
-        return {'form':         form,
-                'prevDisabled': prevDisabled,
-                'nextDisabled': nextDisabled,
-                'currentUser':  authenticated_userid(request)}
+
+    return retval
 
 @view_config(name='add-test-data',
              context=Contacts,
              permission='edit')
-def addTestData(context, request):
+def addTestData(contacts, request):
     for i in range(100):
-        contact = Contact(chooseName(), context)
+        contact = Contact(chooseName(), contacts)
         street, district, city = chooseAddress()
         contact.address1 = street
         contact.address2 = district
@@ -179,13 +175,13 @@ class ProjectForm(Form):
 @view_config(context=Projects,
              renderer='templates/projects.pt',
              permission='view')
-def viewProjects(context, request):
+def viewProjects(projects, request):
     if request.method == 'POST': 
         pass
     else:
         form = ContactForm()
         rows = []
-        for name, project in context.items():
+        for name, project in projects.items():
             form.process(obj=project)
             rows.append([name, ]+[field.data for field in form])
         return {'rows':        rows,
