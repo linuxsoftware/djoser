@@ -1,5 +1,9 @@
 <html metal:use-macro="load: main.pt">
     <title metal:fill-slot="title">Projects</title>
+    <metal:scripts fill-slot="scripts">
+		<script type="text/javascript" language="javascript" src="/static/jquery.js"></script>
+		<script type="text/javascript" language="javascript" src="/static/ajax_demo.js"></script>
+    </metal:scripts>
         <div metal:fill-slot="module-title" class="module-title">
           Projects
         </div>
@@ -23,7 +27,16 @@
             </div> <!-- tool-bar -->
             <div class="page-controls">
             </div> <!-- page-controls -->
+            <div id="ajax-demo">
+              <h3>Ajax Demo</h3>
+              <div class="data">
+                <ul>
+                  <li>0</li>
+                </ul>
+              </div>
+            </div>
             <div class="tree">
+              <h3>Projects</h3>
               <ul>
                 <li>
                   <input type="checkbox" name="select-Djoser" value="" />

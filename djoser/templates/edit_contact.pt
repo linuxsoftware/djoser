@@ -21,9 +21,10 @@
               </div>
             </div> <!-- contact -->
             <div class="tool-bar">
-            <input type="submit" name="OK" value="OK"/>
-            <input type="submit" name="Prev" value="Previous" tal:attributes="disabled prevDisabled"/>
-            <input type="submit" name="Next" value="Next" tal:attributes="disabled nextDisabled"/>
+              ${btns.okBtn}
+              ${btns.prevBtn}
+              ${btns.nextBtn}
+              ${btns.cancelBtn}
             </div>
           </form>
         </div>

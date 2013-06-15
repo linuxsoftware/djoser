@@ -177,19 +177,19 @@ body {
     border-radius:         5px;
     cursor:                pointer;
 }
-.tool-bar input[type="submit"][name="add-contact"] {
+#contacts .tool-bar input[type="submit"][name="addBtn"] {
     padding-left:          32px;
     background-image:      url(/static/add_contact_icon.png);
     background-repeat:     no-repeat;
     background-position:   1px 0px;
 }
-.tool-bar input[type="submit"][name="delete-contact"] {
+#contacts .tool-bar input[type="submit"][name="delBtn"] {
     padding-left:          32px;
     background-image:      url(/static/delete_contact_icon.png);
     background-repeat:     no-repeat;
     background-position:   1px 0px;
 }
-.tool-bar input[type="submit"][name="edit-contact"] {
+#contacts .tool-bar input[type="submit"][name="editBtn"] {
     padding-left: 32px;
     background-image:      url(/static/edit_contact_icon.png);
     background-repeat:     no-repeat;

@@ -1,4 +1,5 @@
 from persistent.mapping import PersistentMapping
+from persistent.list import PersistentList
 from persistent import Persistent
 from pyramid.security import Allow
 from pyramid.security import Authenticated
@@ -29,6 +30,7 @@ class AppRoot(PersistentMapping):
         Contacts(self)
         Projects(self)
 
+# TODO inherit from OOBTree instead of PersistentMapping?
 class AppModule(PersistentMapping):
     def __init__(self, parent):
         PersistentMapping.__init__(self)
@@ -71,7 +73,7 @@ class Contact(Persistent):
     def getId(self):
         return self.__name__
         
-class Project(Persistent):
+class Project(PersistentList):
     __acl__    = [(Allow, Authenticated, 'view'),
                   (Allow, 'group:editors', 'edit')]
 
@@ -85,6 +87,9 @@ class Project(Persistent):
 
     def getId(self):
         return self.__name__
+
+class Task(Persistent):
+    pass
 
 def getAppRoot(request):
     dbRoot = get_connection(request).root()

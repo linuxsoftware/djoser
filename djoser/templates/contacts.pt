@@ -6,8 +6,17 @@
 		<script type="text/javascript" language="javascript" src="/static/jquery.dataTables.min.js"></script>
 		<script type="text/javascript" charset="utf-8">
 			$(document).ready(function() {
-				$('#contacts-table').dataTable();
-			} );
+                $('#contacts-table').dataTable( {
+                    'bFilter':         false,
+                    'bSort':           false,
+                    'bServerSide':     true,
+                    'sAjaxSource':     '/contacts',
+                    'sServerMethod':   'POST',
+                    'iDeferLoading':   ${numContacts},
+                    'sPaginationType': 'full_numbers'
+
+			        } );
+			    } );
 		</script>
     </metal:scripts>
         <div metal:fill-slot="module-title" class="module-title">
@@ -17,21 +26,13 @@
         <div id="contacts">
           <form method="POST" action="${request.path_url}" enctype="multipart/form-data">
             <div class="tool-bar">
-              <input type="submit"
-                     name="add-contact" 
-                     value="Add Contact"
-                     title="Add a new contact" />
-              <input type="submit"
-                     name="delete-contact" 
-                     value="Delete Contact"
-                     title="Delete selected contacts"
-                     onclick="return confirm('Really delete contacts?')" />
-              <input type="submit"
-                     name="edit-contact" 
-                     value="Edit Contact"
-                     title="Edit selected contacts" />
+              ${btns.addBtn(title=u"Add a new contact")}
+              ${btns.delBtn(title=u"Delete selected contacts",
+                            onclick="return confirm('Really delete contacts?')")}
+              ${btns.editBtn(title=u"Edit selected contacts")}
             </div> <!-- tool-bar -->
             <div class="page-controls">
+              ${structure: pager}
             </div> <!-- page-controls -->
             <div class="grid">
               <table id="contacts-table" class="data">
@@ -48,7 +49,7 @@
                     class="${'odd' if repeat.row.even else 'even'}">
                     <tal:data tal:repeat="data row">
                     <td tal:condition="repeat.data.start" class="selector">
-                      <input type="checkbox" name="select-${data}" value="" />
+                        ${structure: data}
                     </td>
                     <td tal:condition="not repeat.data.start">${data}</td>
                     </tal:data>

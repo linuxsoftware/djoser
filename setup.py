@@ -14,7 +14,8 @@ requires = [
     'ZODB3',
     'waitress',
     'WebTest',
-    'wtforms',
+    'WTForms',
+    'WebHelpers',
     ]
 
 setup(name='djoser',
