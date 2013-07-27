@@ -1,0 +1,34 @@
+Djoser Projects
+
+ZopeDict
+  _data
+  Module
+    _cat
+      data
+    currentIndex ""
+
+PageIndex page(module)
+
+
+Project
+ name
+
+ Task
+ name
+ priority (P1,P2,P3)
+  Notebook
+   Note
+
+
+   Task
+   name
+
+BTrees:
+    IO = Integer->Object
+    OI = Object->Integer
+    II = Integer->Integer
+    IF = Integer->Float
+    OO = Object->Object
+
+Pagination:
+   -> 

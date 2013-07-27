@@ -1,10 +1,46 @@
+# ------------------------------------------------------------------------------
+# Contact Resources
+# ------------------------------------------------------------------------------
+from persistent import Persistent
+from pyramid.security import Allow
+from pyramid.security import Authenticated
+from repoze.catalog.indexes.field import CatalogFieldIndex
+import transaction
+from repoze.catalog.query import Ge
+
+#TODO write my own paginator
+import webhelpers.paginate as paginate
+
+from .module import Module
+
+class Contacts(Module):
+    __acl__    = [(Allow, Authenticated,   'view'),
+                  (Allow, 'group:editors', 'edit')]
+    __name__   = 'contacts'
+
+    def __init__(self, parent):
+        Module.__init__(self, parent)
+        self._cat['name'] = CatalogFieldIndex('name')
+
+class Contact(Persistent):
+    __acl__    = [(Allow, Authenticated,   'view'),
+                  (Allow, 'group:editors', 'edit')]
+
+    def __init__(self, name, contacts):
+        Persistent.__init__(self)
+        self.key        = contacts.maxKey() + 1
+        self.__parent__ = contacts
+        self.__name__   = str(self.key)
+        self.name       = name
+        contacts[self.key] = self
+
+#---------------------------------------------------------------------------
+# Contact Views
+#---------------------------------------------------------------------------
 from pyramid.view import view_config
-from pyramid.view import forbidden_view_config
 from pyramid.response import Response
 from pyramid.httpexceptions import HTTPFound
 from pyramid.httpexceptions import HTTPNotImplemented
-from pyramid.security import remember
-from pyramid.security import forget
 from pyramid.security import authenticated_userid
 
 from wtforms import Form
@@ -12,28 +48,9 @@ from wtforms.validators import required
 from wtforms.fields import TextField, SubmitField
 from wtforms.widgets import SubmitInput
 
-import webhelpers.paginate as paginate
-
-from .models import AppRoot
-from .models import getAppRoot
-
-from .security import checkAuthentication
-
-#---------------------------------------------------------------------------
-# AppRoot
-#---------------------------------------------------------------------------
-@view_config(context=AppRoot,
-             renderer='templates/root.pt',
-             permission='view')
-def viewRoot(request):
-    return {'currentUser': authenticated_userid(request)}
-
-#---------------------------------------------------------------------------
-# Contact Views
-#---------------------------------------------------------------------------
-from .models import Contacts
-from .models import Contact
 from .name   import chooseName, chooseAddress
+from .pagination import Page
+from .pagination import CatalogFieldIndexSlicer
 
 class ContactForm(Form):
     name      = TextField(validators=[required()])
@@ -45,6 +62,7 @@ class ContactForm(Form):
     phone     = TextField()
     email     = TextField()
 
+#TODO mv to new module  formextras?
 class SubmitBtn(SubmitInput):
     def __call__(self, field, **kwargs):
         if field.flags.disabled:
@@ -69,8 +87,8 @@ def viewContacts(contacts, request):
     btns = ContactsBtns()
     if request.method == 'POST': 
         btns.process(request.POST)
-        selection = [ selected[7:] for selected in request.POST
-                                   if selected.startswith("select-") ]
+        selection = [ int(selected[7:]) for selected in request.POST
+                                        if selected.startswith("select-") ]
         if btns.addBtn.data:
             url = request.resource_url(contacts, "@@add-contact")
             return HTTPFound(location = url)
@@ -90,27 +108,71 @@ def viewContacts(contacts, request):
     form = ContactForm()
     headings = [field.label.text for field in form]
     rows = []
-    numContacts = len(contacts)
-    current_page = int(request.params.get("page", 1))
-    page_url = paginate.PageURL_WebOb(request)
-    page = paginate.Page(contacts.items(), current_page,
-                            items_per_page=10, item_count=numContacts,
-                            url=page_url)
+
+    pgParam = request.params.get("page", "1")
+    #FIXME do my own pagination
+    #page_url = paginate.PageURL_WebOb(request)
+    idx = contacts._cat['name']
+    #import pdb;pdb.set_trace()
+    #XXX hopefully this isn't as bad as it looks
+    #docIds = idx.scan_forward(idx.docids())
+    #docIds = idx.sort(idx.docids(), CatalogFieldIndex.FWSCAN)
+    # it is pretty bad though, so... (abusing encapsulation)
+    #docIdList = []
+    #for docIds in idx._fwd_index.values():
+    #    for docId in docIds:
+    #        docIdList.append(docId)
+    #docIdList = [ docId for docIds in idx._fwd_index.values() for docId in docIds ]
+    # this is still bad
+
+    #numContacts = len(docIdList)
+    #page = paginate.Page(docIdList, current_page,
+    #                     items_per_page=10, item_count=numContacts,
+    #                     url=page_url)
     # print page
     
+    #results  = contacts.cat.query(Ge('name', 'Kayla Neville'),
+    #                              sort_index='name',
+    #                              limit=10)
+    #print "found (10 would be good) %d" % results[0]
+    #for key in results[1]:
+    numContacts = len(contacts)
+    #if pgParam == "last":
+    #    page = []
+    #    numOnLastPage = numContacts % 10
+    #    for docIds in reversed(idx._fwd_index.values()):
+    #        page[0:0] = docIds # prepend
+    #        if len(page) >= numOnLastPage:
+    #            page = page[-numOnLastPage:]
+    #            break
+    #else:
+    current_page = int(pgParam)
+    #def docIds():
+    #    for docIds in idx._fwd_index.values():
+    #        for docId in docIds:
+    #            yield docId
+    posCache = request.session.get('posCache', {})
+    slicer = CatalogFieldIndexSlicer(idx, numContacts, posCache)
+    page = Page.from_values(slicer, current_page - 1, 10)
+    request.session['posCache'] = posCache
+    lastPg = (numContacts + 9) / 10
 
-    for name, contact in page:
+    for key in page:
+        contact = contacts.get(key)
+        if contact is None: continue
         form.process(obj=contact)
         # TODO use BooleanField?
         checkbox = '<input type="checkbox" '\
-                   'name="select-%s" value="" />'% name
+                   'name="select-%d" value="" />'% key
         rows.append([checkbox, ]+[field.data for field in form])
     
     return {'btns':        btns,
             'headings':    headings,
             'rows':        rows,
             'numContacts': numContacts,
-            'pager':       page.pager(),
+            'pager':       '<a href="?page=1">1</a> ... '+
+                           '<a href="?page=last">last</a> ' +
+                           '<a href="?page=%d">%d</a>' % (lastPg, lastPg),
             'currentUser': authenticated_userid(request)}
 
 @view_config(context=Contacts,
@@ -119,9 +181,11 @@ def viewContacts(contacts, request):
              permission='view')
 def getContacts(contacts, request): 
     retval = {}
+    return retval
     echo = request.POST.get('sEcho')
     retval['sEcho'] = str(int(echo))
     #contacts = getAppRoot(request).get('contacts')
+
     numContacts = len(contacts)
     retval['iTotalRecords'] = numContacts
     retval['iTotalDisplayRecords'] = numContacts
@@ -130,7 +194,6 @@ def getContacts(contacts, request):
     rows = []
     start  = int(request.POST.get('iDisplayStart'))
     length = int(request.POST.get('iDisplayLength'))
-    # TODO use OOBTree? or IOBTree?
     for name, contact in contacts.items()[start:start+length]:
         form.process(obj=contact)
         checkbox = '<input type="checkbox" '\
@@ -186,6 +249,7 @@ def viewContact(contact, request):
              renderer='templates/edit_contact.pt',
              permission='edit')
 def editContact(contact, request):
+    from .app import getAppRoot
     contacts = getAppRoot(request).get('contacts')
     # or contact.__parent__ ?
     form = ContactForm(obj=contact)
@@ -195,7 +259,7 @@ def editContact(contact, request):
     btns.prevBtn.flags.disabled = True
     btns.nextBtn.flags.disabled = True
     try:
-        myPos = selection.index(contact.getId())
+        myPos = selection.index(contact.key)
         if myPos > 0:
             btns.prevBtn.flags.disabled = False
         if myPos < len(selection) - 1:
@@ -236,7 +300,7 @@ def editContact(contact, request):
              context=Contacts,
              permission='edit')
 def addTestData(contacts, request):
-    for i in range(100):
+    for i in  range(100000):
         contact = Contact(chooseName(), contacts)
         street, district, city = chooseAddress()
         contact.address1 = street
@@ -244,94 +308,4 @@ def addTestData(contacts, request):
         contact.city     = city
     return Response('Done!')
 
-#---------------------------------------------------------------------------
-# Project Views
-#---------------------------------------------------------------------------
-from .models import Projects
-from .models import Project
-
-class ProjectForm(Form):
-    name     = TextField(validators=[required()])
-
-@view_config(context=Projects,
-             renderer='templates/projects.pt',
-             permission='view')
-def viewProjects(projects, request):
-    if request.method == 'POST': 
-        pass
-    else:
-        form = ContactForm()
-        rows = []
-        for name, project in projects.items():
-            form.process(obj=project)
-            rows.append([name, ]+[field.data for field in form])
-        return {'rows':        rows,
-                'currentUser': authenticated_userid(request)}
-
-#---------------------------------------------------------------------------
-# AJAX demo
-#---------------------------------------------------------------------------
-from random import randint
-@view_config(context=Projects,
-             xhr=True,
-             renderer="json",
-             permission='view')
-def updates_view(projects, request):
-    return [
-        randint(0,100),
-        randint(0,100),
-        randint(0,100),
-        randint(0,100),
-        888,
-    ]
-
-#---------------------------------------------------------------------------
-# Login
-#---------------------------------------------------------------------------
-@view_config(context=AppRoot, name='login',
-             renderer='templates/login.pt')
-@forbidden_view_config(renderer='templates/login.pt')
-def login(request):
-    login_url = request.resource_url(request.context, 'login')
-    referrer = request.url
-    if referrer == login_url:
-        referrer = '/' # never use the login form itself as came_from
-    came_from = request.params.get('came_from', referrer)
-    message = ''
-    login = ''
-    password = ''
-    if 'form.submitted' in request.params:
-        login = request.params['login']
-        password = request.params['password']
-        if checkAuthentication(login, password, request) is not None:
-            headers = remember(request, login)
-            return HTTPFound(location = came_from,
-                             headers  = headers)
-        message = 'Failed login'
-
-    return dict(message   = message,
-                url       = request.application_url + '/login',
-                came_from = came_from,
-                login     = login,
-                password  = password,
-                currentUser = None)
-
-#---------------------------------------------------------------------------
-# Logout
-#---------------------------------------------------------------------------
-@view_config(context=AppRoot, name='logout')
-def logout(request):
-    headers = forget(request)
-    return HTTPFound(location = request.resource_url(request.context),
-                     headers = headers)
-
-
-#---------------------------------------------------------------------------
-# reprompt for basic authentication upon 403s
-#---------------------------------------------------------------------------
-#@view_config(context=HTTPForbidden)
-#def basic_challenge(request):
-#    response = HTTPUnauthorized()
-#    response.headers.update(forget(request))
-#    return response
 

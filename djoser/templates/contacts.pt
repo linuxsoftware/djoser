@@ -9,16 +9,21 @@
                 $('#contacts-table').dataTable( {
                     'bFilter':         false,
                     'bSort':           false,
-                    'bServerSide':     true,
+                    'bServerSide':     false,
                     'sAjaxSource':     '/contacts',
                     'sServerMethod':   'POST',
                     'iDeferLoading':   ${numContacts},
                     'sPaginationType': 'full_numbers'
-
 			        } );
 			    } );
 		</script>
     </metal:scripts>
+    <!--
+			$(document).ready(function() {
+                $('#contacts-table').dataTable( {
+			        } );
+			    } );
+             -->
         <div metal:fill-slot="module-title" class="module-title">
           Contacts
         </div>
@@ -31,7 +36,7 @@
                             onclick="return confirm('Really delete contacts?')")}
               ${btns.editBtn(title=u"Edit selected contacts")}
             </div> <!-- tool-bar -->
-            <div class="page-controls">
+            <div tal:condition="pager" class="page-controls">
               ${structure: pager}
             </div> <!-- page-controls -->
             <div class="grid">
@@ -57,6 +62,9 @@
                 </tbody>
               </table>
             </div> <!-- grid -->
+            <div tal:condition="pager" class="page-controls">
+              ${structure: pager}
+            </div> <!-- page-controls -->
           </form>
         </div> <!-- contacts -->
       </div> <!-- content -->

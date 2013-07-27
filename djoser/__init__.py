@@ -4,7 +4,7 @@ from pyramid.authentication import AuthTktAuthenticationPolicy
 from pyramid.authorization  import ACLAuthorizationPolicy
 from pyramid.session import UnencryptedCookieSessionFactoryConfig
 
-from .models import getAppRoot
+from .app import getAppRoot
 #from .security import checkAuthentication
 from .security import getGroups
 
