@@ -6,10 +6,6 @@ from pyramid.security import Allow
 from pyramid.security import Authenticated
 from repoze.catalog.indexes.field import CatalogFieldIndex
 import transaction
-from repoze.catalog.query import Ge
-
-#TODO write my own paginator
-import webhelpers.paginate as paginate
 
 from .module import Module
 
@@ -19,8 +15,8 @@ class Contacts(Module):
     __name__   = 'contacts'
 
     def __init__(self, parent):
-        Module.__init__(self, parent)
-        self._cat['name'] = CatalogFieldIndex('name')
+        Module.__init__(self, parent, ['name' 'address1', 'address2', 'city',
+                                       'postCode', 'country', 'phone', 'email'])
 
 class Contact(Persistent):
     __acl__    = [(Allow, Authenticated,   'view'),
@@ -112,7 +108,7 @@ def viewContacts(contacts, request):
     pgParam = request.params.get("page", "1")
     #FIXME do my own pagination
     #page_url = paginate.PageURL_WebOb(request)
-    idx = contacts._cat['name']
+    #idx = contacts._cat['name']
     #import pdb;pdb.set_trace()
     #XXX hopefully this isn't as bad as it looks
     #docIds = idx.scan_forward(idx.docids())
@@ -152,6 +148,7 @@ def viewContacts(contacts, request):
     #        for docId in docIds:
     #            yield docId
     posCache = request.session.get('posCache', {})
+    idx = contacts.getCurrentIndex()
     slicer = CatalogFieldIndexSlicer(idx, numContacts, posCache)
     page = Page.from_values(slicer, current_page - 1, 10)
     request.session['posCache'] = posCache

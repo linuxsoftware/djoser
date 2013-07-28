@@ -3,17 +3,23 @@
 # ------------------------------------------------------------------------------
 from zc.dict.dict import Dict as ZopeDict
 from repoze.catalog.catalog import Catalog
+from repoze.catalog.indexes.field import CatalogFieldIndex
 
 class Module(ZopeDict):
-    def __init__(self, parent):
+    def __init__(self, parent, indices=None):
         ZopeDict.__init__(self)
         self.__parent__  = parent
         parent[self.__name__] = self
         self._cat = Catalog()
+        if indices is None:
+            self._currentIndex = ""
+        else:
+            self._currentIndex = indices[0]
+            for index in indices:
+                self._cat[index] = CatalogFieldIndex(index)
 
-    def addIndex(self, idxName):
-        print "TODO addIdx"
-        pass
+    def getCurrentIndex(self):
+        return self._cat[self._currentIndex]
 
     def delete(self, names):
         print "TODO delete"
