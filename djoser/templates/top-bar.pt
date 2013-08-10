@@ -29,10 +29,13 @@
         </div>
         <div tal:condition="currentUser" class="top-right">
           <div class="account-info">
-            <div class="current-user">${currentUser}</div>
+            <div class="current-user">${currentUser.name}</div>
             <a href="/logout">Logout</a>
           </div>
           <div class="quick-links">
+            <a tal:condition="'group:admin' in currentUser.groups" href="/users" class="imglink">
+              <img src="/static/users_small.png" height="24" alt="Users" title="Users" />
+            </a>
             <a href="/contacts" class="imglink">
               <img src="/static/contacts_small.png" height="24" alt="Contacts" title="Contacts" />
             </a>

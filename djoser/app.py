@@ -1,27 +1,28 @@
 # ------------------------------------------------------------------------------
-# Application Models
+# Application Resources
 # ------------------------------------------------------------------------------
 from persistent.mapping import PersistentMapping
-from persistent import Persistent
 from pyramid.security import Allow
 from pyramid.security import Authenticated
+from pyramid.security import DENY_ALL
 from pyramid_zodbconn import get_connection
-from BTrees.IOBTree import IOBTree
-from repoze.catalog.catalog import Catalog
 import transaction
 
 from . import contacts
 from . import projects
+from . import users
 
 class AppRoot(PersistentMapping):
     __name__   = None
     __parent__ = None
-    __acl__    = [(Allow, Authenticated,   'view')]
+    __acl__    = [(Allow, Authenticated,   'view'),
+                  DENY_ALL]
 
     def __init__(self):
         PersistentMapping.__init__(self)
         contacts.Contacts(self)
         projects.Projects(self)
+        users.Users(self)
 
 def getAppRoot(request):
     dbRoot = get_connection(request).root()
@@ -35,20 +36,15 @@ def getAppRoot(request):
 # ------------------------------------------------------------------------------
 from pyramid.view import view_config
 from pyramid.view import forbidden_view_config
-from pyramid.response import Response
 from pyramid.httpexceptions import HTTPFound
-from pyramid.httpexceptions import HTTPNotImplemented
 from pyramid.security import remember
 from pyramid.security import forget
-from pyramid.security import authenticated_userid
-
-from .security import checkAuthentication
 
 @view_config(context=AppRoot,
              renderer='templates/root.pt',
              permission='view')
 def viewRoot(request):
-    return {'currentUser': authenticated_userid(request)}
+    return {'currentUser': request.user}
 
 @view_config(context=AppRoot, name='login',
              renderer='templates/login.pt')
@@ -65,7 +61,8 @@ def login(request):
     if 'form.submitted' in request.params:
         login = request.params['login']
         password = request.params['password']
-        if checkAuthentication(login, password, request) is not None:
+        #TODO pull up a user object
+        if users.checkAuthentication(login, password, request):
             headers = remember(request, login)
             return HTTPFound(location = came_from,
                              headers  = headers)

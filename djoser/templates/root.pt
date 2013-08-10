@@ -4,6 +4,19 @@
     <p>never seen</p>
       <div metal:fill-slot="content" id="content">
         <div class="tablets">
+          <div tal:condition="'group:admin' in currentUser.groups" 
+               class="tablet-outer">
+            <a href="/users">
+              <div class="tablet" id="users-tablet">
+                <div class="tablet-image">
+                  <img src="/static/users.png" alt="" />
+                </div>
+                <div class="tablet-text inset-text">
+                  Users
+                </div>
+              </div> <!-- tablet -->
+            </a>
+          </div> <!-- tablet-outer -->
           <div class="tablet-outer">
             <a href="/contacts">
               <div class="tablet" id="contacts-tablet">

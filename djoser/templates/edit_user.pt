@@ -1,14 +1,14 @@
 <html metal:use-macro="load: main.pt">
-      <title metal:fill-slot="title">Edit Contact</title>
-      <a metal:fill-slot="module-title" href="/contacts" title="Contacts">
+      <title metal:fill-slot="title">Edit User</title>
+      <a metal:fill-slot="module-title" href="/users" title="Users">
           <div class="module-title">
-              Contacts
+              Users
           </div>
       </a>
       <div metal:fill-slot="content" id="content">
-        <div id="contacts">
+        <div id="users">
           <form method="POST" action="${request.path_url}" enctype="multipart/form-data">
-            <div class="contact">
+            <div class="user">
               <ul tal:condition="form.errors" class="errors">
                 <tal:field tal:repeat="(field,errors) form.errors.items()">
                 <li tal:repeat="error errors">
@@ -16,17 +16,22 @@
                 </li>
                 </tal:field>
               </ul>
-              <div class="field" tal:repeat="field form">
-                ${field.label} ${field}
+              <div class="field">${form.name.label} ${form.name}</div>
+              <div class="field">${form.groups.label} ${form.groups}</div>
+              <div class="field">${form.password.label} ${form.password}</div>
+              <div class="field">
+                ${form.contact.label}
+                <span tal:define="contact form.contact.data" 
+                   tal:condition="contact">${contact[1]}</span>
+                ${btns.linkBtn}
               </div>
-            </div> <!-- contact -->
+            </div> <!-- user -->
             <div class="tool-bar">
               ${btns.okBtn}
               ${btns.prevBtn}
               ${btns.nextBtn}
               ${btns.cancelBtn}
             </div>
-            <input type="text" name="came_from" value="${came_from}"/>
           </form>
         </div>
       </div>

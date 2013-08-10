@@ -1,30 +1,30 @@
 # ------------------------------------------------------------------------------
 # Project Models
 # ------------------------------------------------------------------------------
-from persistent.mapping import PersistentMapping
 from persistent.list import PersistentList
 from persistent import Persistent
 from pyramid.security import Allow
 from pyramid.security import Authenticated
-from pyramid_zodbconn import get_connection
-from BTrees.IOBTree import IOBTree
-from repoze.catalog.catalog import Catalog
-from repoze.catalog.indexes.text import CatalogTextIndex
-import transaction
+from pyramid.security import ALL_PERMISSIONS
+from pyramid.security import DENY_ALL
 
-from .module import Module
+from .table import Table
 
-class Projects(Module):
+class Projects(Table):
     __acl__    = [(Allow, Authenticated,   'view'),
-                  (Allow, 'group:editors', 'edit')]
+                  (Allow, 'group:editor',  ['view', 'edit']),
+                  (Allow, 'group:admin',   ALL_PERMISSIONS),
+                  DENY_ALL]
     __name__   = 'projects'
 
     def __init__(self, parent):
-        Module.__init__(self, parent)
+        Table.__init__(self, parent)
         
 class Project(PersistentList):
     __acl__    = [(Allow, Authenticated,   'view'),
-                  (Allow, 'group:editors', 'edit')]
+                  (Allow, 'group:editor',  ['view', 'edit']),
+                  (Allow, 'group:admin',   ALL_PERMISSIONS),
+                  DENY_ALL]
 
     def __init__(self, name, parent):
         Persistent.__init__(self)
@@ -48,20 +48,11 @@ class Note(Persistent):
 # Project Views
 # ------------------------------------------------------------------------------
 from pyramid.view import view_config
-from pyramid.view import forbidden_view_config
-from pyramid.response import Response
-from pyramid.httpexceptions import HTTPFound
-from pyramid.httpexceptions import HTTPNotImplemented
-from pyramid.security import remember
-from pyramid.security import forget
-from pyramid.security import authenticated_userid
 
 from wtforms import Form
 from wtforms.validators import required
-from wtforms.fields import TextField, SubmitField
-from wtforms.widgets import SubmitInput
+from wtforms.fields import TextField
 
-import webhelpers.paginate as paginate
 
 class ProjectForm(Form):
     name     = TextField(validators=[required()])
@@ -79,5 +70,5 @@ def viewProjects(projects, request):
             form.process(obj=project)
             rows.append([name, ]+[field.data for field in form])
         return {'rows':        rows,
-                'currentUser': authenticated_userid(request)}
+                'currentUser': request.user}
 

@@ -31,10 +31,8 @@
         <div id="contacts">
           <form method="POST" action="${request.path_url}" enctype="multipart/form-data">
             <div class="tool-bar">
-              ${btns.addBtn(title=u"Add a new contact")}
-              ${btns.delBtn(title=u"Delete selected contacts",
-                            onclick="return confirm('Really delete contacts?')")}
-              ${btns.editBtn(title=u"Edit selected contacts")}
+              ${btns.okBtn}
+              ${btns.cancelBtn}
             </div> <!-- tool-bar -->
             <div tal:condition="pager" class="page-controls">
               ${structure: pager}

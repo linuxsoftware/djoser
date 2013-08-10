@@ -1,65 +1,63 @@
 <html metal:use-macro="load: main.pt">
-    <title metal:fill-slot="title">Contacts</title>
+    <title metal:fill-slot="title">Users</title>
     <metal:scripts fill-slot="scripts">
         <link rel="stylesheet" href="/static/demo_table.css" type="text/css" media="screen" charset="utf-8" />
 		<script type="text/javascript" language="javascript" src="/static/jquery.js"></script>
 		<script type="text/javascript" language="javascript" src="/static/jquery.dataTables.min.js"></script>
 		<script type="text/javascript" charset="utf-8">
+			$(document).ready(function() {
+                $('#users-table').dataTable( {
+                    'bFilter':         false,
+                    'bSort':           false,
+                    'bServerSide':     false,
+                    'sAjaxSource':     '/users',
+                    'sServerMethod':   'POST',
+                    'iDeferLoading':   ${numUsers},
+                    'sPaginationType': 'full_numbers'
+			        } );
+			    } );
 		</script>
     </metal:scripts>
     <!--
 			$(document).ready(function() {
-                $('#contacts-table').dataTable( {
-                    'bFilter':         false,
-                    'bSort':           false,
-                    'bServerSide':     false,
-                    'sAjaxSource':     '/contacts',
-                    'sServerMethod':   'POST',
-                    'iDeferLoading':   ${numContacts},
-                    'sPaginationType': 'full_numbers'
-			        } );
-			    } );
-			$(document).ready(function() {
-                $('#contacts-table').dataTable( {
+                $('#users-table').dataTable( {
 			        } );
 			    } );
              -->
         <div metal:fill-slot="module-title" class="module-title">
-          Contacts
+          Users
         </div>
       <div metal:fill-slot="content" id="content">
-        <div id="contacts">
+        <div id="users">
           <form method="POST" action="${request.path_url}" enctype="multipart/form-data">
             <div class="tool-bar">
-              ${btns.addBtn(title=u"Add a new contact")}
-              ${btns.delBtn(title=u"Delete selected contacts",
-                            onclick="return confirm('Really delete contacts?')")}
-              ${btns.editBtn(title=u"Edit selected contacts")}
+              ${btns.addBtn(title=u"Add a new user")}
+              ${btns.delBtn(title=u"Delete selected users",
+                            onclick="return confirm('Really delete users?')")}
+              ${btns.editBtn(title=u"Edit selected users")}
             </div> <!-- tool-bar -->
             <div tal:condition="pager" class="page-controls">
               ${structure: pager}
             </div> <!-- page-controls -->
             <div class="grid">
-              <table id="contacts-table" class="data">
+              <table id="users-table" class="data">
                 <thead>
                   <tr>
                     <th class="selector">
                       <input type="checkbox" name="mega-select-all" value="" />
                     </th>
-                    <th tal:repeat="heading headings">
-                      <a href="/contacts?sort=${heading[0]}">${heading[1]}</a>
-                    </th>
+                    <th>Name</th>
+                    <th>Groups</th>
+                    <th>Contact</th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr tal:repeat="row rows"
                     class="${'odd' if repeat.row.even else 'even'}">
-                    <tal:data tal:repeat="data row">
-                    <td tal:condition="repeat.data.start" class="selector">
-                        ${structure: data}
-                    </td>
-                    <td tal:condition="not repeat.data.start">${data}</td>
-                    </tal:data>
+                    <td class="selector">${structure: row[0]}</td>
+                    <td class="name">${row[1]}</td>
+                    <td class="groups">${row[2]}</td>
+                    <td class="contact">${structure: row[3]}</td>
                   </tr>
                 </tbody>
               </table>
@@ -68,6 +66,6 @@
               ${structure: pager}
             </div> <!-- page-controls -->
           </form>
-        </div> <!-- contacts -->
+        </div> <!-- users -->
       </div> <!-- content -->
 </html>

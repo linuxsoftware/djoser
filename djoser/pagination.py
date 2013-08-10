@@ -1,32 +1,14 @@
 from itertools import islice
-import math
 import numbers
 
 class Page(object):
-    size = 10
-
-    def __init__(self, iterator, index, length):
-        self._iterator = iterator
-        self.index = index
-        self.pages = int(math.ceil(float(length)/self.size))
+    def __init__(self, values, pageNum, pageSize):
+        self.values = values
+        self.start  = (pageNum - 1) * pageSize
+        self.stop   = pageNum * pageSize
 
     def __iter__(self):
-        return self._iterator
-
-    @classmethod
-    def from_values(cls, values, index, length):
-        # values must be sliceable
-        start = index * cls.size
-        stop = (index + 1) * cls.size
-        iterator = iter(values[start:stop])
-        return Page(iterator, index, length)
-
-    @classmethod
-    def from_iter(cls, iterator, index, length):
-        start = index * cls.size
-        stop = (index + 1) * cls.size
-        slice = islice(iterator, start, stop)
-        return Page(slice, index, length)
+        return iter(self.values[self.start:self.stop])
 
 
 class BTreeSlicer(object):
@@ -123,7 +105,13 @@ class CatalogFieldIndexSlicer(object):
         start -= offset
         stop  -= offset
         while len(retval) < numNeeded:
-            values = next(fwdi)
+            try:
+                values = next(fwdi)
+            except StopIteration:
+                print "need:%d have:%d start:%d stop:%d " % \
+                        (numNeeded, len(retval), start, stop)
+                import pdb; pdb.set_trace()
+                raise
             numValues = len(values)
             self.posCache['index']  += 1
             self.posCache['offset'] += numValues
@@ -157,7 +145,13 @@ class CatalogFieldIndexSlicer(object):
         rindex = len(self.index._fwd_index) - self.posCache['index']
         fwdri = islice(fwdri, rindex, None)
         while len(retval) < numNeeded:
-            values = next(fwdri)
+            try:
+                values = next(fwdri)
+            except StopIteration:
+                print "need:%d have:%d start:%d stop:%d " % \
+                        (numNeeded, len(retval), start, stop)
+                import pdb; pdb.set_trace()
+                raise
             numValues = len(values)
             valuesStart -= numValues
             self.posCache['index'] -= 1

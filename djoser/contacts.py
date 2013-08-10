@@ -4,31 +4,41 @@
 from persistent import Persistent
 from pyramid.security import Allow
 from pyramid.security import Authenticated
+from pyramid.security import ALL_PERMISSIONS
+from pyramid.security import DENY_ALL
 from repoze.catalog.indexes.field import CatalogFieldIndex
 import transaction
 
-from .module import Module
+from .table import Table
 
-class Contacts(Module):
+class Contacts(Table):
     __acl__    = [(Allow, Authenticated,   'view'),
-                  (Allow, 'group:editors', 'edit')]
+                  (Allow, 'group:editor',  ['view', 'edit']),
+                  (Allow, 'group:admin',   ALL_PERMISSIONS),
+                  DENY_ALL]
     __name__   = 'contacts'
+    Headings   = ['name', 'address1', 'address2', 'city',
+                  'postCode', 'country', 'phone', 'email']
 
     def __init__(self, parent):
-        Module.__init__(self, parent, ['name' 'address1', 'address2', 'city',
-                                       'postCode', 'country', 'phone', 'email'])
+        Table.__init__(self, parent, Contacts.Headings)
 
 class Contact(Persistent):
     __acl__    = [(Allow, Authenticated,   'view'),
-                  (Allow, 'group:editors', 'edit')]
+                  (Allow, 'group:editor',  ['view', 'edit']),
+                  (Allow, 'group:admin',   ALL_PERMISSIONS),
+                  DENY_ALL]
 
     def __init__(self, name, contacts):
         Persistent.__init__(self)
-        self.key        = contacts.maxKey() + 1
-        self.__parent__ = contacts
-        self.__name__   = str(self.key)
-        self.name       = name
+        self.key           = contacts.maxKey() + 1
+        self.__parent__    = contacts
+        self.__name__      = self.key
+        for heading in contacts.Headings:
+            self.__setattr__(heading, "")
+        self.name          = name
         contacts[self.key] = self
+
 
 #---------------------------------------------------------------------------
 # Contact Views
@@ -42,11 +52,11 @@ from pyramid.security import authenticated_userid
 from wtforms import Form
 from wtforms.validators import required
 from wtforms.fields import TextField, SubmitField
-from wtforms.widgets import SubmitInput
 
 from .name   import chooseName, chooseAddress
 from .pagination import Page
 from .pagination import CatalogFieldIndexSlicer
+from .formextras import SubmitBtn
 
 class ContactForm(Form):
     name      = TextField(validators=[required()])
@@ -57,13 +67,6 @@ class ContactForm(Form):
     country   = TextField()
     phone     = TextField()
     email     = TextField()
-
-#TODO mv to new module  formextras?
-class SubmitBtn(SubmitInput):
-    def __call__(self, field, **kwargs):
-        if field.flags.disabled:
-            kwargs.setdefault("disabled", True)
-        return SubmitInput.__call__(self, field, **kwargs)
 
 class ContactBtns(Form):
     okBtn     = SubmitField(u"OK",       widget=SubmitBtn())
@@ -102,55 +105,24 @@ def viewContacts(contacts, request):
         return HTTPFound(location = url)
 
     form = ContactForm()
-    headings = [field.label.text for field in form]
+    headings = [(field.name, field.label.text) for field in form]
     rows = []
 
     pgParam = request.params.get("page", "1")
-    #FIXME do my own pagination
-    #page_url = paginate.PageURL_WebOb(request)
-    #idx = contacts._cat['name']
-    #import pdb;pdb.set_trace()
-    #XXX hopefully this isn't as bad as it looks
-    #docIds = idx.scan_forward(idx.docids())
-    #docIds = idx.sort(idx.docids(), CatalogFieldIndex.FWSCAN)
-    # it is pretty bad though, so... (abusing encapsulation)
-    #docIdList = []
-    #for docIds in idx._fwd_index.values():
-    #    for docId in docIds:
-    #        docIdList.append(docId)
-    #docIdList = [ docId for docIds in idx._fwd_index.values() for docId in docIds ]
-    # this is still bad
-
-    #numContacts = len(docIdList)
-    #page = paginate.Page(docIdList, current_page,
-    #                     items_per_page=10, item_count=numContacts,
-    #                     url=page_url)
-    # print page
-    
-    #results  = contacts.cat.query(Ge('name', 'Kayla Neville'),
-    #                              sort_index='name',
-    #                              limit=10)
-    #print "found (10 would be good) %d" % results[0]
-    #for key in results[1]:
-    numContacts = len(contacts)
-    #if pgParam == "last":
-    #    page = []
-    #    numOnLastPage = numContacts % 10
-    #    for docIds in reversed(idx._fwd_index.values()):
-    #        page[0:0] = docIds # prepend
-    #        if len(page) >= numOnLastPage:
-    #            page = page[-numOnLastPage:]
-    #            break
-    #else:
     current_page = int(pgParam)
-    #def docIds():
-    #    for docIds in idx._fwd_index.values():
-    #        for docId in docIds:
-    #            yield docId
+    sortParam = request.params.get("sort", "")
     posCache = request.session.get('posCache', {})
+    #FIXME currentIndex can't be stored in contacts
+    if (sortParam and sortParam != contacts._currentIndex and 
+        sortParam in contacts._cat):
+        contacts._currentIndex = sortParam
+        current_page = 1
+        posCache.clear()
+        
+    numContacts = len(contacts)
     idx = contacts.getCurrentIndex()
     slicer = CatalogFieldIndexSlicer(idx, numContacts, posCache)
-    page = Page.from_values(slicer, current_page - 1, 10)
+    page = Page(slicer, current_page, 10)
     request.session['posCache'] = posCache
     lastPg = (numContacts + 9) / 10
 
@@ -158,7 +130,7 @@ def viewContacts(contacts, request):
         contact = contacts.get(key)
         if contact is None: continue
         form.process(obj=contact)
-        # TODO use BooleanField?
+        # TODO use WTForms.BooleanField?
         checkbox = '<input type="checkbox" '\
                    'name="select-%d" value="" />'% key
         rows.append([checkbox, ]+[field.data for field in form])
@@ -168,9 +140,8 @@ def viewContacts(contacts, request):
             'rows':        rows,
             'numContacts': numContacts,
             'pager':       '<a href="?page=1">1</a> ... '+
-                           '<a href="?page=last">last</a> ' +
                            '<a href="?page=%d">%d</a>' % (lastPg, lastPg),
-            'currentUser': authenticated_userid(request)}
+            'currentUser': request.user}
 
 @view_config(context=Contacts,
              xhr=True,
@@ -179,30 +150,102 @@ def viewContacts(contacts, request):
 def getContacts(contacts, request): 
     retval = {}
     return retval
-    echo = request.POST.get('sEcho')
-    retval['sEcho'] = str(int(echo))
-    #contacts = getAppRoot(request).get('contacts')
+    #echo = request.POST.get('sEcho')
+    #retval['sEcho'] = str(int(echo))
+    ##contacts = getAppRoot(request).get('contacts')
 
-    numContacts = len(contacts)
-    retval['iTotalRecords'] = numContacts
-    retval['iTotalDisplayRecords'] = numContacts
+    #numContacts = len(contacts)
+    #retval['iTotalRecords'] = numContacts
+    #retval['iTotalDisplayRecords'] = numContacts
 
-    form = ContactForm()
-    rows = []
-    start  = int(request.POST.get('iDisplayStart'))
-    length = int(request.POST.get('iDisplayLength'))
-    for name, contact in contacts.items()[start:start+length]:
-        form.process(obj=contact)
-        checkbox = '<input type="checkbox" '\
-                   'name="select-%s" value="" />'% name
-        rows.append([checkbox, ]+[field.data for field in form])
-        #row = dict(enumerate([field.data for field in form], start=1))
-        #row[0] = checkbox
-        #row['DT_RowId'] = name
-        #rows.append(row)
-    retval['aaData'] = rows
-    return retval
+    #form = ContactForm()
+    #rows = []
+    #start  = int(request.POST.get('iDisplayStart'))
+    #length = int(request.POST.get('iDisplayLength'))
+    #for name, contact in contacts.items()[start:start+length]:
+    #    form.process(obj=contact)
+    #    checkbox = '<input type="checkbox" '\\
+    #               'name="select-%s" value="" />'% name
+    #    rows.append([checkbox, ]+[field.data for field in form])
+    #    #row = dict(enumerate([field.data for field in form], start=1))
+    #    #row[0] = checkbox
+    #    #row['DT_RowId'] = name
+    #    #rows.append(row)
+    #retval['aaData'] = rows
+    #return retval
            
+@view_config(name="link",
+             context=Contacts,
+             renderer='templates/link_contact.pt',
+             permission='view')
+def linkContact(contacts, request):
+    btns = ContactBtns()
+    if request.method == 'POST': 
+        btns.process(request.POST)
+        selection = [ selected[7:] for selected in request.POST
+                                   if selected.startswith("select-") ]
+        key = request.session['linkFromUser']
+        from .app import getAppRoot
+        users = getAppRoot(request).get('users', '')
+        user = users.get(key)
+        if user is None:
+            return HTTPNotImplemented()
+        url = request.resource_url(user)
+        if btns.okBtn.data:
+            if selection:
+                contact = contacts.get(selection[0])
+                if not contact:
+                    return HTTPNotImplemented()
+                user.contact = (contact.key, contact.name)
+            else:
+                user.contact = None
+            return HTTPFound(location = url)
+        elif btns.cancelBtn.data:
+            return HTTPFound(location = url)
+        else:
+            return HTTPNotImplemented()
+
+    #TODO this is all common and shoule be reuseable
+    form = ContactForm()
+    headings = [(field.name, field.label.text) for field in form]
+    rows = []
+
+    pgParam = request.params.get("page", "1")
+    current_page = int(pgParam)
+    sortParam = request.params.get("sort", "")
+    posCache = request.session.get('posCache', {})
+    #FIXME currentIndex can't be stored in contacts
+    if (sortParam and sortParam != contacts._currentIndex and 
+        sortParam in contacts._cat):
+        contacts._currentIndex = sortParam
+        current_page = 1
+        posCache.clear()
+        
+    numContacts = len(contacts)
+    idx = contacts.getCurrentIndex()
+    slicer = CatalogFieldIndexSlicer(idx, numContacts, posCache)
+    page = Page(slicer, current_page, 10)
+    #import pdb; pdb.set_trace()
+    request.session['posCache'] = posCache
+    lastPg = (numContacts + 9) / 10
+
+    for key in page:
+        contact = contacts.get(key)
+        if contact is None: continue
+        form.process(obj=contact)
+        # TODO use WTForms.BooleanField?
+        checkbox = '<input type="checkbox" '\
+                   'name="select-%d" value="" />'% key
+        rows.append([checkbox, ]+[field.data for field in form])
+    
+    return {'btns':        btns,
+            'headings':    headings,
+            'rows':        rows,
+            'numContacts': numContacts,
+            'pager':       '<a href="?page=1">1</a> ... '+
+                           '<a href="?page=%d">%d</a>' % (lastPg, lastPg),
+            'currentUser': request.user}
+
 
 @view_config(name='add-contact',
              context=Contacts,
@@ -211,9 +254,11 @@ def getContacts(contacts, request):
 def addContact(contacts, request):
     form = ContactForm()
     btns = ContactBtns()
+    btns.prevBtn.flags.disabled = True
+    btns.nextBtn.flags.disabled = False  # TODO support add-another
     retval = {'form':         form,
               'btns':         btns,
-              'currentUser':  authenticated_userid(request)}
+              'currentUser':  request.user}
     if request.method == 'POST':
         form.process(request.POST)
         btns.process(request.POST)
@@ -226,6 +271,7 @@ def addContact(contacts, request):
             # Create a new Contact
             contact = Contact(form.name.data, contacts)
             form.populate_obj(contact)
+            contacts.reindex(contact)
             url = request.resource_url(contact).rstrip('/')
             return HTTPFound(location = url)
         else:
@@ -239,7 +285,7 @@ def addContact(contacts, request):
 def viewContact(contact, request):
     form = ContactForm(obj=contact)
     return {'form':        form,
-            'currentUser': authenticated_userid(request)}
+            'currentUser': request.user}
 
 @view_config(name='edit',
              context=Contact,
@@ -263,15 +309,22 @@ def editContact(contact, request):
             btns.nextBtn.flags.disabled = False
     except ValueError:
         pass
+    referer = request.get('HTTP_REFERER', request.url)
     retval = {'form':         form,
               'btns':         btns,
-              'currentUser':  authenticated_userid(request)}
+              'came_from':    referer,
+              'currentUser':  request.user}
+
 
     if request.method == 'POST':
+        if 'came_from' in request.params:
+            retval['came_from'] = request.params['came_from']
         form.process(request.POST)
         btns.process(request.POST)
         if btns.cancelBtn.data:
-            url = request.resource_url(contact).rstrip('/')
+            # go back if you can
+            url = request.params.get('came_from', 
+                                     request.resource_url(contact).rstrip('/'))
             return HTTPFound(location = url)
         elif btns.okBtn.data:
             request.session['selectedContacts'] = []
@@ -289,6 +342,7 @@ def editContact(contact, request):
             return retval
         # Update an existing Contact
         form.populate_obj(contact)
+        contacts.reindex(contact)
         return HTTPFound(location = url)
 
     return retval
@@ -297,12 +351,13 @@ def editContact(contact, request):
              context=Contacts,
              permission='edit')
 def addTestData(contacts, request):
-    for i in  range(100000):
+    for i in  range(10000):
         contact = Contact(chooseName(), contacts)
         street, district, city = chooseAddress()
         contact.address1 = street
         contact.address2 = district
         contact.city     = city
+        contacts.reindex(contact)
     return Response('Done!')
 
 

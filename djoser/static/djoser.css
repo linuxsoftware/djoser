@@ -71,14 +71,14 @@ body {
 #top-bar .top-right {
     position:      absolute;
     right:         0;
-    width:         175px;
+    width:         212px;
     height:        50px;
     background:    rgba(255, 255, 111, 0.9);
 }
 #top-bar .quick-links {
     margin:        0;
     padding-left:  5px;
-    width:         70px;
+    width:         107px;
 }
 #top-bar .quick-links img {
     float:         left;

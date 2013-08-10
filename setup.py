@@ -6,17 +6,20 @@ here = os.path.abspath(os.path.dirname(__file__))
 README = open(os.path.join(here, 'README.txt')).read()
 CHANGES = open(os.path.join(here, 'CHANGES.txt')).read()
 
-requires = [
-    'pyramid',
-    'pyramid_zodbconn',
-    'transaction',
-    'pyramid_tm',
-    'ZODB3',
-    'waitress',
-    'WebTest',
-    'WTForms',
-    'WebHelpers',
-    ]
+requires = ['passlib',
+            'pyramid',
+            'pyramid_debugtoolbar',
+            'pyramid_tm',
+            'pyramid_zodbconn',
+            'repoze.catalog',
+            'transaction',
+            'waitress',
+            'WebHelpers',
+            'WebTest',
+            'WTForms',
+            'zc.dict',
+            'ZODB3',
+           ]
 
 setup(name='djoser',
       version='0.0',

@@ -1,0 +1,25 @@
+<html metal:use-macro="load: main.pt">
+      <title metal:fill-slot="title">User</title>
+      <a metal:fill-slot="module-title" href="/users" title="Users">
+          <div class="module-title">
+              Users
+          </div>
+      </a>
+      <div metal:fill-slot="content" id="content">
+        <div id="users">
+            <div class="user">
+              <div class="field">${form.name.label} ${form.name.data}</div>
+              <div class="field">${form.groups.label} ${form.groups.data}</div>
+              <div class="field">${form.password.label} ${form.password.data}</div>
+              <div class="field">
+                ${form.contact.label}
+                <a tal:define="contact form.contact.data" 
+                   tal:condition="contact"
+                   href="/contacts/${contact[0]}">${contact[1]}</a>
+              </div>
+            </div> <!-- user -->
+            <div class="tool-bar">
+            </div>
+        </div>
+      </div>
+</html>
