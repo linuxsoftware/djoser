@@ -17,7 +17,7 @@ def main(global_config, **settings):
 #    authnPolicy = BasicAuthAuthenticationPolicy(check=checkAuthentication,
 #                                                realm='Djosr Login') #, debug=True)
     authnPolicy = AuthTktAuthenticationPolicy(secret='not telling',
-                                              callback=getGroups, debug=True)
+                                              callback=getGroups)#, debug=True)
     authzPolicy = ACLAuthorizationPolicy()
     config.set_authentication_policy(authnPolicy)
     config.set_authorization_policy(authzPolicy)

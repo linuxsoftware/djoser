@@ -33,13 +33,13 @@
             <a href="/logout">Logout</a>
           </div>
           <div class="quick-links">
-            <a tal:condition="'group:admin' in currentUser.groups" href="/users" class="imglink">
+            <a tal:condition="viewUsers" href="/users" class="imglink">
               <img src="/static/users_small.png" height="24" alt="Users" title="Users" />
             </a>
-            <a href="/contacts" class="imglink">
+            <a tal:condition="viewContacts" href="/contacts" class="imglink">
               <img src="/static/contacts_small.png" height="24" alt="Contacts" title="Contacts" />
             </a>
-            <a href="/projects" class="imglink">
+            <a tal:condition="viewProjects" href="/projects" class="imglink">
               <img src="/static/projects_small.png" height="24" alt="Projects" title="Projects" />
             </a>
           </div>

@@ -4,8 +4,7 @@
     <p>never seen</p>
       <div metal:fill-slot="content" id="content">
         <div class="tablets">
-          <div tal:condition="'group:admin' in currentUser.groups" 
-               class="tablet-outer">
+          <div tal:condition="viewUsers" class="tablet-outer">
             <a href="/users">
               <div class="tablet" id="users-tablet">
                 <div class="tablet-image">
@@ -18,7 +17,7 @@
             </a>
           </div> <!-- tablet-outer -->
           <div class="tablet-outer">
-            <a href="/contacts">
+            <a tal:condition="viewContacts" href="/contacts">
               <div class="tablet" id="contacts-tablet">
                 <div class="tablet-image">
                   <img src="/static/contacts.png" alt="" />
@@ -29,7 +28,7 @@
               </div> <!-- tablet -->
             </a>
           </div> <!-- tablet-outer -->
-          <div class="tablet-outer">
+          <div tal:condition="viewProjects" class="tablet-outer">
             <a href="/projects">
               <div class="tablet" id="projects-tablet">
                 <div class="tablet-image">

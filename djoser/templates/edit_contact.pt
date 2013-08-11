@@ -26,7 +26,7 @@
               ${btns.nextBtn}
               ${btns.cancelBtn}
             </div>
-            <input type="text" name="came_from" value="${came_from}"/>
+            <input type="text" name="came_from" value="${came_from|nothing}"/>
           </form>
         </div>
       </div>

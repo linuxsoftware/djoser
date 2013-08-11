@@ -20,8 +20,7 @@ Groups = {"group:guest":    "Guest",
           "group:admin":    "Admin"}
 
 def checkAuthentication(name, givenPass, request):
-    from .app import getAppRoot
-    users = getAppRoot(request).get('users')
+    users = request.root['users']
     user = users.getByName(name)
     if user:
         return user.verifyPassword(givenPass)
@@ -33,8 +32,7 @@ def checkAuthentication(name, givenPass, request):
 def getUser(request):
     name = unauthenticated_userid(request)
     if name is not None:
-        from .app import getAppRoot
-        users = getAppRoot(request).get('users')
+        users = request.root['users']
         return users.getByName(name)
 
 def getGroups(name, request):
@@ -112,7 +110,7 @@ from pyramid.view import view_config
 from pyramid.response import Response
 from pyramid.httpexceptions import HTTPFound
 from pyramid.httpexceptions import HTTPNotImplemented
-from pyramid.security import authenticated_userid
+from pyramid.security import view_execution_permitted
 
 from wtforms import Form
 from wtforms.validators import required
@@ -204,12 +202,18 @@ def viewUsers(users, request):
             contact = '<a href="/contacts/%d">%s</a>' % user.contact
         rows.append([checkbox, name, groups, contact])
     
+    contacts = request.root['contacts']
+    projects = request.root['projects']
+    #TODO move viewUsers,viewContacts,viewProjects into the User object
     return {'btns':        btns,
             'rows':        rows,
             'numUsers': numUsers,
             'pager':       '<a href="?page=1">1</a> ... '+
                            '<a href="?page=%d">%d</a>' % (lastPg, lastPg),
-            'currentUser': request.user}
+            'viewUsers'    : True,
+            'viewContacts' : view_execution_permitted(contacts, request),
+            'viewProjects' : view_execution_permitted(projects, request),
+            'currentUser'  : request.user}
 
 #@view_config(context=Users,
 #             xhr=True,
@@ -227,9 +231,14 @@ def viewUsers(users, request):
 def addUser(users, request):
     form = UserForm()
     btns = UserBtns()
-    retval = {'form':         form,
-              'btns':         btns,
-              'currentUser':  request.user}
+    contacts = request.root['contacts']
+    projects = request.root['projects']
+    retval = {'form'         : form,
+              'btns'         : btns,
+              'viewUsers'    : True,
+              'viewContacts' : view_execution_permitted(contacts, request),
+              'viewProjects' : view_execution_permitted(projects, request),
+              'currentUser'  : request.user}
     if request.method == 'POST':
         form.process(request.POST)
         btns.process(request.POST)
@@ -247,8 +256,6 @@ def addUser(users, request):
             return HTTPFound(location = url)
         elif btns.linkBtn.data:
             request.session['linkFromUser'] = user.key
-            from .app import getAppRoot
-            contacts = getAppRoot(request).get('contacts')
             url = request.resource_url(contacts, "@@link")
             return HTTPFound(location = url)
         else:
@@ -269,8 +276,7 @@ def viewUser(user, request):
              renderer='templates/edit_user.pt',
              permission='edit')
 def editUser(user, request):
-    from .app import getAppRoot
-    users = getAppRoot(request).get('users')
+    users = request.root['users']
     # or user.__parent__ ?
     form = UserForm(obj=user)
     btns = UserBtns()
@@ -286,9 +292,14 @@ def editUser(user, request):
             btns.nextBtn.flags.disabled = False
     except ValueError:
         pass
-    retval = {'form':         form,
-              'btns':         btns,
-              'currentUser':  request.user}
+    contacts = request.root['contacts']
+    projects = request.root['projects']
+    retval = {'form'         : form,
+              'btns'         : btns,
+              'viewUsers'    : True,
+              'viewContacts' : view_execution_permitted(contacts, request),
+              'viewProjects' : view_execution_permitted(projects, request),
+              'currentUser'  : request.user}
 
     if request.method == 'POST':
         form.process(request.POST)
@@ -308,8 +319,6 @@ def editUser(user, request):
             url = request.resource_url(users, selected, "@@edit")
         elif btns.linkBtn.data:
             request.session['linkFromUser'] = user.key
-            from .app import getAppRoot
-            contacts = getAppRoot(request).get('contacts')
             url = request.resource_url(contacts, "@@link")
             return HTTPFound(location = url)
         else:

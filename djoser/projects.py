@@ -48,6 +48,7 @@ class Note(Persistent):
 # Project Views
 # ------------------------------------------------------------------------------
 from pyramid.view import view_config
+from pyramid.security import view_execution_permitted
 
 from wtforms import Form
 from wtforms.validators import required
@@ -61,14 +62,20 @@ class ProjectForm(Form):
              renderer='templates/projects.pt',
              permission='view')
 def viewProjects(projects, request):
+    users    = request.root['users']
+    contacts = request.root['contacts']
+    rows = []
     if request.method == 'POST': 
         pass
     else:
         form = ProjectForm()
-        rows = []
         for name, project in projects.items():
             form.process(obj=project)
             rows.append([name, ]+[field.data for field in form])
-        return {'rows':        rows,
-                'currentUser': request.user}
+        root = request.root
+    return {'rows':        rows,
+            'viewUsers'    : view_execution_permitted(users,    request),
+            'viewContacts' : view_execution_permitted(contacts, request),
+            'viewProjects' : True,
+            'currentUser'  : request.user}
 

@@ -6,7 +6,6 @@ from pyramid.security import Allow
 from pyramid.security import Authenticated
 from pyramid.security import ALL_PERMISSIONS
 from pyramid.security import DENY_ALL
-from repoze.catalog.indexes.field import CatalogFieldIndex
 import transaction
 
 from .table import Table
@@ -47,7 +46,7 @@ from pyramid.view import view_config
 from pyramid.response import Response
 from pyramid.httpexceptions import HTTPFound
 from pyramid.httpexceptions import HTTPNotImplemented
-from pyramid.security import authenticated_userid
+from pyramid.security import view_execution_permitted
 
 from wtforms import Form
 from wtforms.validators import required
@@ -78,6 +77,12 @@ class ContactsBtns(Form):
     addBtn    = SubmitField(u"Add Contact")
     delBtn    = SubmitField(u"Delete Contact")
     editBtn   = SubmitField(u"Edit Contact")
+
+
+# TODO use interfaces?
+# Specifying an interface instead of a class as the context or containment
+# predicate arguments within view configuration statements makes it possible
+# to use a single view callable for more than one class of resource object.
 
 @view_config(context=Contacts,
              renderer='templates/contacts.pt',
@@ -135,12 +140,17 @@ def viewContacts(contacts, request):
                    'name="select-%d" value="" />'% key
         rows.append([checkbox, ]+[field.data for field in form])
     
+    users    = request.root['users']
+    projects = request.root['projects']
     return {'btns':        btns,
             'headings':    headings,
             'rows':        rows,
             'numContacts': numContacts,
             'pager':       '<a href="?page=1">1</a> ... '+
                            '<a href="?page=%d">%d</a>' % (lastPg, lastPg),
+            'viewUsers'    : view_execution_permitted(users,    request),
+            'viewContacts' : True,
+            'viewProjects' : view_execution_permitted(projects, request),
             'currentUser': request.user}
 
 @view_config(context=Contacts,
@@ -180,13 +190,14 @@ def getContacts(contacts, request):
              permission='view')
 def linkContact(contacts, request):
     btns = ContactBtns()
+    users    = request.root['users']
+    projects = request.root['projects']
+
     if request.method == 'POST': 
         btns.process(request.POST)
         selection = [ selected[7:] for selected in request.POST
                                    if selected.startswith("select-") ]
         key = request.session['linkFromUser']
-        from .app import getAppRoot
-        users = getAppRoot(request).get('users', '')
         user = users.get(key)
         if user is None:
             return HTTPNotImplemented()
@@ -244,6 +255,9 @@ def linkContact(contacts, request):
             'numContacts': numContacts,
             'pager':       '<a href="?page=1">1</a> ... '+
                            '<a href="?page=%d">%d</a>' % (lastPg, lastPg),
+            'viewUsers'    : view_execution_permitted(users,    request),
+            'viewContacts' : True,
+            'viewProjects' : view_execution_permitted(projects, request),
             'currentUser': request.user}
 
 
@@ -256,8 +270,13 @@ def addContact(contacts, request):
     btns = ContactBtns()
     btns.prevBtn.flags.disabled = True
     btns.nextBtn.flags.disabled = False  # TODO support add-another
+    users    = request.root['users']
+    projects = request.root['projects']
     retval = {'form':         form,
               'btns':         btns,
+              'viewUsers'    : view_execution_permitted(users,    request),
+              'viewContacts' : True,
+              'viewProjects' : view_execution_permitted(projects, request),
               'currentUser':  request.user}
     if request.method == 'POST':
         form.process(request.POST)
@@ -284,7 +303,12 @@ def addContact(contacts, request):
              permission='view')
 def viewContact(contact, request):
     form = ContactForm(obj=contact)
+    users    = request.root['users']
+    projects = request.root['projects']
     return {'form':        form,
+            'viewUsers'    : view_execution_permitted(users,    request),
+            'viewContacts' : True,
+            'viewProjects' : view_execution_permitted(projects, request),
             'currentUser': request.user}
 
 @view_config(name='edit',
@@ -292,9 +316,9 @@ def viewContact(contact, request):
              renderer='templates/edit_contact.pt',
              permission='edit')
 def editContact(contact, request):
-    from .app import getAppRoot
-    contacts = getAppRoot(request).get('contacts')
+    contacts = request.root['contacts']
     # or contact.__parent__ ?
+    # or find_interface(Users) ?
     form = ContactForm(obj=contact)
     btns = ContactBtns()
     selection = request.session.get('selectedContacts', [])
@@ -310,9 +334,14 @@ def editContact(contact, request):
     except ValueError:
         pass
     referer = request.get('HTTP_REFERER', request.url)
+    users    = request.root['users']
+    projects = request.root['projects']
     retval = {'form':         form,
               'btns':         btns,
               'came_from':    referer,
+              'viewUsers'    : view_execution_permitted(users,    request),
+              'viewContacts' : True,
+              'viewProjects' : view_execution_permitted(projects, request),
               'currentUser':  request.user}
 
 
